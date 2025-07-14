@@ -1,0 +1,22 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Flexible unimodal density estimation in hidden Markov models
+
+This repository contains code for the simulation experiments and case study presented in the paper "Flexible unimodal density estimation in hidden Markov models". In the paper we discuss flexible, P-spline-based estimation of state-dependent densities in hidden Markov models (HMMs), and how to impose unimodality constraints to make such models more interpretable and robust.
+
+## Overview
+
+* The folder `simulations` contains all code for the two simulation experiments presented in the paper.
+* The folder `narwal_case_study` contains code and data for reproducing the case study on narwhal dive data.
+* The folder `Tutorial` constains an R markdown script, demonstrating the use of unimodal P-spline-based density estimation in HMMs.
