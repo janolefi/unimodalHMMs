@@ -88,7 +88,7 @@ dat = list(maxdep = data$maxdep, N = 3)
 
 # refit best model
 # optpar = init_values[[which.max(llks)]]
-# saveRDS(optpar, "./narwal_case_study/optpar_norm.rds") # saving best initial values
+# saveRDS(optpar, "./narwal_case_study/objects/optpar_norm.rds") # saving best initial values
 # optpar = readRDS("./narwal_case_study/optpar_norm.rds") # reading best initial values
 # obj = MakeADFun(nll, optpar)
 # opt = nlminb(obj$par, obj$fn, obj$gr)
@@ -101,7 +101,7 @@ dat = list(maxdep = data$maxdep, N = 3)
 
 # save estimated model
 # saveRDS(mod_par, "./narwal_case_study/mod_normal.rds")
-mod_par = readRDS("./narwal_case_study/mod_normal.rds")
+mod_par = readRDS("./narwal_case_study/objects/mod_normal.rds")
 
 
 ###### Nonparametric fits -------------------------------------------------
@@ -217,8 +217,8 @@ plot(llks)
 # saveRDS(optpar, "./narwal_case_study/optpar_np.rds") # saving best initial values
 # saveRDS(optlambda, "./narwal_case_study/optlambda_np.rds") # saving best initial lambda
 
-optpar = readRDS("./narwal_case_study/optpar_np.rds") # reading best initial values
-optlambda = readRDS("./narwal_case_study/optlambda_np.rds") # reading best initial lambda
+optpar = readRDS("./narwal_case_study/objects/optpar_np.rds") # reading best initial values
+optlambda = readRDS("./narwal_case_study/objects/optlambda_np.rds") # reading best initial lambda
 
 # constructing the smooth density object
 sDens = smooth_dens_construct(data["maxdep"],
@@ -261,8 +261,8 @@ mod_np$dens = dens_np # saving the densities in the model object
 mod_np$xseq = xseq # saving the prediction grid
 delta_np = mod_np$delta # stationary distribution of the state process
 
-saveRDS(mod_np, "./narwal_case_study/mod_unconstrained_opt.rds") # saving the model")
-mod_np = readRDS("./narwal_case_study/mod_unconstrained_opt.rds") # reading the model
+saveRDS(mod_np, "./narwal_case_study/objects/mod_unconstrained_opt.rds") # saving the model")
+mod_np = readRDS("./narwal_case_study/objects/mod_unconstrained_opt.rds") # reading the model
 
 
 hist(data$maxdep, breaks = 30, prob = TRUE, bor = "white", 
@@ -348,7 +348,7 @@ delta_uni = mod_uni$delta
 
 # save the model
 # saveRDS(mod_uni, "./narwal_case_study/mod_constrained_opt.rds")
-mod_uni = readRDS("./narwal_case_study/mod_constrained_opt.rds") # reading the model
+mod_uni = readRDS("./narwal_case_study/objects/mod_constrained_opt.rds") # reading the model
 
 hist(data$maxdep, breaks = 30, prob = TRUE, bor = "white", 
      xlim = c(0, 1000), ylim = c(0, 0.002),
