@@ -364,7 +364,7 @@ for(i in 1:3) lines(mod_uni$xseq, mod_uni$delta[i] * mod_uni$dens[,i], lwd = 2, 
 
 # Plotting big state-dependent density figure -----------------------------
 
-# pdf("./narwal_case_study/narwhal_statedep.pdf", width = 6, height = 6)
+# pdf("./narwal_case_study/figures/narwhal_statedep.pdf", width = 6, height = 6)
 
 lwd = 1.5
 breaks = 30
@@ -450,7 +450,7 @@ box()
 
 
 ## plotting the decoded time series
-# pdf("narwal_case_study/narwhal_states.pdf", width = 6, height = 4)
+# pdf("narwal_case_study/figures/narwhal_states.pdf", width = 6, height = 4)
 
 # Define a 4-row layout: top row for legend, then the 3 plots
 layout(matrix(1:4, nrow = 4), heights = c(0.3, 1, 1, 1.3))  # top row is small
