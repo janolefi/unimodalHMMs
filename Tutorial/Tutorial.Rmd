@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r directory, include = FALSE}
 # Set the directory for the tutorial
-your_directory <- setwd("/Users/jan-ole/R/Packages_on_Git/unimodal_densities2/")
+your_directory <- setwd("/Users/jan-ole/R/Packages_on_Git/unimodalHMMs/")
 setwd(your_directory)
 ```
 
