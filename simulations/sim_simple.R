@@ -351,8 +351,8 @@ Sys.time() - t1
 
 
 ## Save results
-saveRDS(results, file = "./simulations/simple_sim100_new.rds")
-results = readRDS("./simulations/simple_sim100.rds")
+saveRDS(results, file = "./simulations/results/simple_sim100_new.rds")
+results = readRDS("./simulations/results/simple_sim100.rds")
 
 
 ## Filter results
@@ -362,7 +362,7 @@ nresults = length(results)
 
 ## plotting results
 
-# pdf("./simulations/simple_sim.pdf", width = 8, height = 5)
+# pdf("./simulations/figures/simple_sim.pdf", width = 8, height = 5)
 
 # plotting the results
 par(mfrow = c(2,2), mar = c(5,4,2,1) + 0.1)
@@ -469,7 +469,7 @@ AUC$model = factor(AUC$mod, levels = c("sn-t", "normal", "unconstraind", "constr
 
 
 
-pdf("./simulations/simple_sim_boxplot.pdf", width = 6, height = 4)
+pdf("./simulations/figures/simple_sim_boxplot.pdf", width = 6, height = 4)
 
 # par(mfrow = c(1,2))
 par(mfrow = c(1,1), mar = c(5,5,3,2)+0.1)

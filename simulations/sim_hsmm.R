@@ -24,7 +24,7 @@ d2 = dgeom(x, p)
 # expected dwell time in state 1
 sum((x+1) * d1)
 
-# pdf("./simulations/hsmm_sim_dwelltime.pdf", width = 8, height = 4)
+# pdf("./simulations/figures/hsmm_sim_dwelltime.pdf", width = 8, height = 4)
 
 par(mfrow = c(1,2))
 plot(x+1, d1, type = "h", lwd = 2, bty = "n", col = color[1], ylim = c(0, 0.6),
@@ -241,8 +241,8 @@ for(i in 1:n_sim){
 }
 
 ## Save results
-saveRDS(results, file = "./simulations/hsmm_sim4.rds")
-results = readRDS("./simulations/hsmm_sim4.rds")
+saveRDS(results, file = "./simulations/results/hsmm_sim4.rds")
+results = readRDS("./simulations/results/hsmm_sim4.rds")
 
 # simulate data to get empirical approximation of true state distribution
 set.seed(123)
@@ -252,7 +252,7 @@ delta_hat = prop.table(table(bigdata$s))
 
 ## plotting results
 
-# pdf("./simulations/hsmm_sim_w_boxplot2.pdf", width = 7, height = 4.5)
+# pdf("./simulations/figures/hsmm_sim_w_boxplot2.pdf", width = 7, height = 4.5)
 
 m = matrix(c(1,2,3,3), nrow = 2, ncol = 2)
 layout(mat = m, widths = c(1.5, 1.2))
