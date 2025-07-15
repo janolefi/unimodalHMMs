@@ -10,8 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r directory, include = FALSE}
 # Set the directory for the tutorial
-your_directory <- setwd("/Users/jan-ole/R/Packages_on_Git/unimodalHMMs/")
-setwd(your_directory)
+# your_directory <- setwd("/Users/jan-ole/R/Packages_on_Git/unimodalHMMs/")
+# setwd(your_directory)
 ```
 
 ## 1. Setup
@@ -221,7 +221,7 @@ pnll = function(par){
 ```
 
 
-```{r fit model,include=FALSE}
+```{r fit model,include = FALSE, cache = TRUE}
 mod = qreml(pnll, par0, mydat, 
             random = "beta") # telling the model what are spline coefficients/ random effects
 ```
@@ -315,17 +315,17 @@ mydat <- list(N = N, # number of states
 
 We can then fit a model for each combination of indices. In total, this involves fitting length(m1) $\times$ length(m2) $\times$ length(m3) models, which amounts to 48 in our case. For convenience, we currently explore only one randomly selected initial value `Par0` and `modmat$par`, but ideally, we should examine more, meaning even more models to fit.
 
-```{r fit likelihoods per set of indices, include = FALSE}
+```{r fit likelihoods per set of indices, include = FALSE, cache = TRUE}
 llks = rep(NA, nrow(m_grid))
 for(i in 1:nrow(m_grid)){
   cat("\nPosition", i, "of", nrow(m_grid), "\n")
   mydat$m = m_grid[i, ]
-  thismod = qreml(pnll, par0, mydat, random = "beta", silent = 1, alpha = 0.4)
+  thismod = qreml(pnll, par0, mydat, random = "beta")
   llks[i] = thismod$llk
 }
 ```
 
-```{r get the best model, and fit again}
+```{r get the best model, and fit again, chache = TRUE}
 # Get the mode estimate
 m_opt = m_grid[which.max(llks), ] # m_opt is 7 12 15
 
