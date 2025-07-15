@@ -261,7 +261,7 @@ mod_np$dens = dens_np # saving the densities in the model object
 mod_np$xseq = xseq # saving the prediction grid
 delta_np = mod_np$delta # stationary distribution of the state process
 
-saveRDS(mod_np, "./narwal_case_study/objects/mod_unconstrained_opt.rds") # saving the model")
+# saveRDS(mod_np, "./narwal_case_study/objects/mod_unconstrained_opt.rds") # saving the model")
 mod_np = readRDS("./narwal_case_study/objects/mod_unconstrained_opt.rds") # reading the model
 
 
