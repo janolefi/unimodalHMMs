@@ -364,7 +364,7 @@ for(i in 1:3) lines(mod_uni$xseq, mod_uni$delta[i] * mod_uni$dens[,i], lwd = 2, 
 
 # Plotting big state-dependent density figure -----------------------------
 
-# pdf("./narwal_case_study/figures/narwhal_statedep.pdf", width = 6, height = 6)
+# pdf("./narwal_case_study/figures/narwhal_statedep.pdf", width = 6, height = 5.5)
 
 lwd = 1.5
 breaks = 30
@@ -428,7 +428,7 @@ box()
 par(mar = c(5,5.5,4,1)+0.1)
 hist(data$maxdep, breaks = breaks, prob = TRUE, bor = "white", 
      xlim = c(0, 1000), ylim = c(0, 0.002), las = 1, ylab = "",
-     main = "", xlab = "Max depth")
+     main = "", xlab = "Max depth (m)")
 mtext("(e) Unimodal model", side = 3, adj = 0, line = 1, font = 1, cex = 0.8)
 mtext("Density", side = 2, line = 4.2, cex = 0.7)  # move y-axis label further from axis
 
@@ -440,7 +440,7 @@ rect(580, -0.0001/5, 1020, 0.0001)
 par(mar = c(5,1,4,1)+0.1)
 hist(data$maxdep, breaks = breaks, prob = TRUE, bor = "white", 
      xlim = c(600, 1000), ylim = c(0, 0.00007), yaxt = "n",
-     main = "", ylab = "", xlab = "Max Depth (m)")
+     main = "", ylab = "", xlab = "Max depth (m)")
 mtext("(f) Unimodal model - tail", side = 3, adj = 0, line = 1, font = 1, cex = 0.8)
 for(i in 1:3) lines(mod_uni$xseq[idx], mod_uni$delta[i] * mod_uni$dens[idx,i], lwd = lwd, col = color[i])
 box()
@@ -477,13 +477,13 @@ mtext("(a) Parametric", side = 3, adj = 0.02, line = -1, cex = 0.7)
 par(mar = c(1.2, 4, 0.5, 2) + 0.1)
 plot(idx, data$maxdep[idx], type = "h", col = color[mod_np$states[idx]],
      ylab = ylab, bty = "n", las = 1, xaxt = "n")
-mtext("(b) Unconstrained", side = 3, adj = 0.02, line = -1, cex = 0.7)
+mtext("(b) Nonparametric", side = 3, adj = 0.02, line = -1, cex = 0.7)
 
 # panel (c): constrained
 par(mar = c(4, 4, 0.5, 2) + 0.1)
 plot(idx, data$maxdep[idx], type = "h", col = color[mod_uni$states[idx]],
      ylab = ylab, bty = "n", las = 1, xlab = "Observation index")
-mtext("(c) Constrained", side = 3, adj = 0.02, line = -1, cex = 0.7)
+mtext("(c) Unimodal", side = 3, adj = 0.02, line = -1, cex = 0.7)
 
 # dev.off()
 
