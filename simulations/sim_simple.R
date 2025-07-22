@@ -351,7 +351,7 @@ Sys.time() - t1
 
 
 ## Save results
-saveRDS(results, file = "./simulations/results/simple_sim100_new.rds")
+# saveRDS(results, file = "./simulations/results/simple_sim100_new.rds")
 results = readRDS("./simulations/results/simple_sim100.rds")
 
 
@@ -369,7 +369,8 @@ par(mfrow = c(2,2), mar = c(5,4,2,1) + 0.1)
 
 # parametric true
 plot(NA, xlim = c(-2, 8), ylim = c(0, 0.5), bty = "n", las = 1,
-     ylab = "Density", xlab = "Observations", main = "(a) Skewnorm / t")
+     ylab = "Density", xlab = "Observations")
+mtext("(a) Skewnorm / t", side = 3, adj = 0.5, line = 0.2, cex = 0.9)
 for(i in 1:nresults){
   thismod = results[[i]]$mod_par
   delta = thismod$alpha / sqrt(1 + thismod$alpha^2)
@@ -389,7 +390,8 @@ curve(0.5 * dt((x-truepar$mu) / truepar$sigma, truepar$df) / truepar$sigma,
 
 # parametric wrong
 plot(NA, xlim = c(-2, 8), ylim = c(0, 0.5), bty = "n", las = 1,
-     ylab = "Density", xlab = "Observations", main = "(b) Normal")
+     ylab = "Density", xlab = "Observations")
+mtext("(b) Normal", side = 3, adj = 0.5, line = 0.2, cex = 0.9)
 for(i in 1:nresults){
   thismod = results[[i]]$mod_par_norm
   thiscol = color[order(thismod$mu)]
@@ -408,7 +410,8 @@ curve(0.5 * dt((x-truepar$mu) / truepar$sigma, truepar$df) / truepar$sigma,
 # nonparametric unconstrained
 label_switch = rep(FALSE, nresults)
 plot(NA, xlim = c(-2, 8), ylim = c(0, 0.5), bty = "n", las = 1,
-     ylab = "Density", xlab = "Observations", main = "(c) Nonparametric")
+     ylab = "Density", xlab = "Observations")
+mtext("(c) Nonparametric", side = 3, adj = 0.5, line = 0.2, cex = 0.9)
 for(i in 1:nresults){
   thismod = results[[i]]$mod_np
   thisxseq = thismod$xseq
@@ -430,7 +433,8 @@ curve(0.5 * dt((x-truepar$mu) / truepar$sigma, truepar$df) / truepar$sigma,
 # nonparametric constrained
 label_switch_c = rep(FALSE, nresults)
 plot(NA, xlim = c(-2, 8), ylim = c(0, 0.5), bty = "n", las = 1,
-     ylab = "Density", xlab = "Observations", main = "(d) Unimodal")
+     ylab = "Density", xlab = "Observations")
+mtext("(d) Unimodal", side = 3, adj = 0.5, line = 0.2, cex = 0.9)
 for(i in 1:nresults){
   thismod = results[[i]]$mod_c
   thisxseq = thismod$xseq
@@ -461,24 +465,26 @@ auc_c = sapply(results, function(x) x$mod_c$auc)
 # correct for label switching
 auc_c[label_switch_c] = 1 - auc_c[label_switch_c]
 
+names = c("Skewnormal-t", "Normal", "Nonparametric", "Unimodal")
 AUC = data.frame(
   auc = c(auc_par, auc_par_norm, auc_np, auc_c),
-  model = rep(c("sn-t", "normal", "unconstraind", "constrained"), each = nresults)
+  model = rep(names, each = nresults)
 )
-AUC$model = factor(AUC$mod, levels = c("sn-t", "normal", "unconstraind", "constrained"))
+AUC$model = factor(AUC$mod, levels = names)
 
 
 
-pdf("./simulations/figures/simple_sim_boxplot.pdf", width = 6, height = 4)
+# pdf("./simulations/figures/simple_sim_boxplot.pdf", width = 5, height = 3.5)
 
 # par(mfrow = c(1,2))
-par(mfrow = c(1,1), mar = c(5,5,3,2)+0.1)
+par(mfrow = c(1,1), mar = c(5,7,3,2)+0.1)
 # boxplot(auc ~ model, data = AUC, ylab = "AUC", xlab = "Model", main = "(a)",
 #         pch = 20, col = "gray95", lwd = 0.5, outcol = "#00000030", frame = FALSE)
-boxplot(auc ~ model, data = AUC, ylim = c(0.97, 1), ylab = "", xlab = "Model", main = "",
+boxplot(auc ~ model, data = AUC, ylim = c(0.97, 1), ylab = "", xlab = "AUC", main = "",
+        horizontal = TRUE,
         pch = 20, col = "gray95", lwd = 0.5, outcol = "#00000030", frame = FALSE, las = 1)
-abline(h = median(AUC$auc[which(AUC$model == "sn-t")]), col = color[2], lty = 2)
-mtext("AUC", side = 2, line = 4, cex = 1)  # move y-axis label further from axis
+abline(v = median(AUC$auc[which(AUC$model == "Skewnormal-t")]), col = color[2], lty = 2)
+# mtext("AUC", side = 2, line = 4, cex = 1)  # move y-axis label further from axis
 
-dev.off()
+# dev.off()
 

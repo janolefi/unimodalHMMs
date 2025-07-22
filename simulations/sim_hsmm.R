@@ -241,7 +241,7 @@ for(i in 1:n_sim){
 }
 
 ## Save results
-saveRDS(results, file = "./simulations/results/hsmm_sim4.rds")
+# saveRDS(results, file = "./simulations/results/hsmm_sim4.rds")
 results = readRDS("./simulations/results/hsmm_sim4.rds")
 
 # simulate data to get empirical approximation of true state distribution
@@ -260,7 +260,8 @@ layout(mat = m, widths = c(1.5, 1.2))
 # unconstrained
 par(mar = c(4.5,4,2,2))
 plot(NA, xlim = c(0, 25), ylim = c(0,0.15), las = 1,
-     xlab = "Observations", ylab = "Density", bty = "n", main = "(a) Unconstrained")
+     xlab = "Observations", ylab = "Density", bty = "n", main = "")
+mtext("(a) Nonparametric", side = 3, adj = 0.5, line = 0.3, cex = 0.9)
 
 for(i in 1:length(results)){
   thisres = results[[i]]
@@ -281,7 +282,8 @@ legend("topright", bty = "n",
 
 par(mar = c(4.5,4,2,2))
 plot(NA, xlim = c(0, 25), ylim = c(0,0.15), las = 1,
-     xlab = "Observations", ylab = "Density", bty = "n", main = "(b) Constrained")
+     xlab = "Observations", ylab = "Density", bty = "n", main = "")
+mtext("(b) Unimodal", side = 3, adj = 0.5, line = 0.3, cex = 0.9)
 
 for(i in 1:length(results)){
   thisres = results[[i]]
@@ -305,12 +307,13 @@ auc = sapply(results, function(x) x$mod$auc)
 auc_c = sapply(results, function(x) x$mod_c$auc)
 
 df = data.frame(AUC = c(auc, auc_c), 
-                model = c(rep("Unconstrained", length(auc)), 
-                          rep("Constrained", length(auc_c))))
-df$model = factor(df$model, levels = c("Unconstrained", "Constrained"))
+                model = c(rep("Nonparametric", length(auc)), 
+                          rep("Unimodal", length(auc_c))))
+df$model = factor(df$model, levels = c("Nonparametric", "Unimodal"))
 
-boxplot(AUC ~ model, data = df, main = "(c) AUC", xlab = "Model", yaxt = "n", ylim = c(0.997, 1),
+boxplot(AUC ~ model, data = df, main = "", xlab = "Model", yaxt = "n", ylim = c(0.997, 1),
         pch = 20, col = "gray95", lwd = 0.5, outcol = "#00000030", frame = FALSE)
+mtext("(c) AUC", side = 3, adj = 0.5, line = 0.2, cex = 0.9)
 axis(2, at = c(0.997, 0.998, 0.999, 1), labels = c(0.997, 0.998, 0.999, 1), las = 1)
 
 # dev.off()
@@ -322,12 +325,15 @@ par(mfrow = c(1,2))
 # unconstrained
 gamma22 = sapply(results, function(x) x$mod$Gamma[2,2])
 round(mean(gamma22), 4)
+round(sd(gamma22), 4)
 hist(gamma22, xlim = c(0.85, 1), bor = "white")
 abline(v = 0.9)
 
 # constrained
 gamma22_c = unlist(sapply(results, function(x) x$mod_c$Gamma[2,2]))
 round(mean(gamma22_c), 4)
+round(sd(gamma22_c), 4)
 hist(gamma22_c, xlim = c(0.85, 1), bor = "white")
 abline(v = 0.9)
+
 
