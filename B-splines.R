@@ -1,5 +1,5 @@
 library(splines2)
-library(LaMa)
+library(LaMa) # only for dskewnorm()
 
 cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#0072B2", "red3", "yellow4" ,"plum", "#F0E442")
 cbPalette <- rep(cbPalette, 3)
@@ -81,6 +81,10 @@ lines(x, rowSums(dspline), lwd = lwd)
 
 
 # Initialisation strategy explained ---------------------------------------
+
+# Below, we briefly explain how the spline coefficients are initialised using a 
+# parametric reference density. This happens automatically when calling
+# smooth_dens_construct()
 
 # coefficients
 sd = 2 # standard deviation of Gaussian
