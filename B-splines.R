@@ -24,7 +24,7 @@ B_norm <- t(t(B) / w)
 
 # plotting
 
-pdf("B-splines.pdf", width = 7, height = 3)
+# pdf("B-splines.pdf", width = 7, height = 3)
 
 par(mfrow = c(1,3),
     mar = c(5,4,4,0.5))
@@ -75,4 +75,39 @@ for (i in 2:ncol(B_norm)) {
 }
 lines(x, rowSums(dspline), lwd = lwd)
 
-dev.off()
+# dev.off()
+
+
+
+
+# Initialisation strategy explained ---------------------------------------
+
+# coefficients
+sd = 2 # standard deviation of Gaussian
+b <- dnorm(basis_pos, 5, sd, log = TRUE)
+b <- b - min(b)
+a <- exp(b)
+
+# with all a = 1, we get a straight line for regular basis
+# hence for regular basis, if a's are shaped like a Gaussian, this is inherited by the spline function
+plot(x, rowSums(B), type = "l", ylim = c(0, 5)) # rowSums(B) = B %*% rep(1, ncol(B))
+# but the normalisation changes this, so we need to account for that
+lines(x, rowSums(B_norm))
+# approximate value of B_norm %*% at basis positions
+scaling = sapply(1:k, function(i) rowSums(B_norm)[which.min(abs(basis_pos[i] - x))])
+lines(x, B_norm %*% (1 / scaling)) # much better 
+# shift does not matter because a will be normalised
+
+# rescale a
+a = a / scaling
+# sum to 1
+a <- a / sum(a)
+
+
+dspline <- t(t(B_norm) * a)
+
+plot(x, rowSums(dspline), type = "l", bty = "n",
+     main = "(c) Sum of basis functions", ylab = "Density", lwd = 2, 
+     ylim = c(0, dnorm(5, 5, sd)))
+curve(dnorm(x, 5, sd), add = TRUE, col = "blue", n = 500)
+
