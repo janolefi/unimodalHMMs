@@ -326,6 +326,10 @@ par(mfrow = c(1,2))
 gamma22 = sapply(results, function(x) x$mod$Gamma[2,2])
 round(mean(gamma22), 4)
 round(sd(gamma22), 4)
+# dwell time
+round(mean(1 / (1 - gamma22)), 4)
+round(sd(1 / (1 - gamma22)), 4)
+
 hist(gamma22, xlim = c(0.85, 1), bor = "white")
 abline(v = 0.9)
 
@@ -333,6 +337,10 @@ abline(v = 0.9)
 gamma22_c = unlist(sapply(results, function(x) x$mod_c$Gamma[2,2]))
 round(mean(gamma22_c), 4)
 round(sd(gamma22_c), 4)
+# dwell time
+round(mean(1 / (1 - gamma22_c)), 4)
+round(sd(1 / (1 - gamma22_c)), 4)
+
 hist(gamma22_c, xlim = c(0.85, 1), bor = "white")
 abline(v = 0.9)
 
