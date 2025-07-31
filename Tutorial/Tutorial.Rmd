@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## 1. Setup
 
-In this ``R`` tutorial, we illustrate the implementation of the unimodal spline method described in the paper "Flexible unimodal density estimation in hidden Markov models". In this paper, we develop a method to fit hidden Markov models with flexible, P-spline-based emission densities that are constrained to be unimodal. In the paper, we demonstrate how such constraints can make the model more robust against slight misspecification of the state process model which is often the case in practice.
+In this ``R`` tutorial, we illustrate the implementation of the unimodal spline method described in the paper "Flexible unimodal density estimation in hidden Markov models". In this paper, we develop a method to fit hidden Markov models with flexible, P-spline-based emission densities that are constrained to be unimodal. We demonstrate how such constraints can make the model more robust against slight misspecification of the state process model which is often the case in practice.
 
 We begin by first loading relevant packages and sourcing custom helper functions.
 
@@ -55,7 +55,7 @@ title("B-spline basis functions")
 
 As we described in the main manuscript, to enforce unimodality (i.e., the fact that the spline should have a single peak/ mode), we need to apply some restrictions on the spline coefficients $\alpha_1, \alpha_2, \alpha_3, \alpha_4$ and $\alpha_5$. We fix the general shape by requiring the coefficients to be non-decreasing up to the mode and then non-increasing [@kollmann2014unimodal]. In practice, the $\alpha$ parameters are constrained to sum to one and we apply the constraint to the unconstrained coefficients $\beta$. For simplicity, we will focus on the $\alpha$ values here, just keep in mind that later the constraint will be applied to the unconstrained coefficients.
 
-Because unimodality is enforced via constraints on the spline coefficients, and not directly on the function values or the location of the mode, we cannot predict in advance exactly where the mode of the spline function will be on the x-axis because the basis functions overlap. Thus a single coefficient doesn't control the function height at a single point on the x-axis, but rather influences the entire region where the assoicated basis function is non-zero. So even if we have an increasing then decreasing sequence of spline coefficients, the actual mode of the function might fall in the following locations:
+Because unimodality is enforced via constraints on the spline coefficients, and not directly on the function values or the location of the mode, we cannot predict in advance exactly where the mode of the spline function will be on the x-axis because the basis functions overlap. Thus a single coefficient doesn't control the function height at a single point on the x-axis, but rather influences the entire region where the associated basis function is non-zero. So even if we have an increasing then decreasing sequence of spline coefficients, the actual mode of the function might fall in the following locations:
 (1) In the first interval, (2) at the knot ($x = 0.5$), or (3) in the second interval, depending on the interaction of the coefficients. 
 
 Let us see how those three locations look like if we consider an increasing then decreasing sequence of spline coefficients.
@@ -129,7 +129,7 @@ First, let us specify the model we will fit to our data. To do so, we use the `s
 
 We set the following arguments:
 
--   `"data"`: dataframe containing the variables used in the formula. It can be multiple data streams of different types (`real`, `positive`, `circular`). This information is then converted into a suitable B-spline basis.
+- `"data"`: dataframe containing the variables used in the formula. It can be multiple data streams of different types (`real`, `positive`, `circular`). This information is then converted into a suitable B-spline basis.
 
 - `"par"`: nested named list of initial means and sds/concentrations for each data stream. This information is converted into initial guesses for the spline coefficients to facilitate easier numerical estimation.
 
@@ -137,7 +137,7 @@ We set the following arguments:
 
 - `"k"`:  number of basis functions for each data stream
 
--  `"knots"`: optional named list of knots vectors (including the boundary knots) to be used for basis construction. If not provided, the knots are placed equidistantly for "real" and "circular" and using polynomial spacing for "positive".
+- `"knots"`: optional named list of knots vectors (including the boundary knots) to be used for basis construction. If not provided, the knots are placed equidistantly for "real" and "circular" and using polynomial spacing for "positive".
 
 
 
@@ -159,7 +159,7 @@ modmat <- smooth_dens_construct(
 )
 ```
 
-We can now have a look of what `smooth_dens_construc()` returns: a nested list containing the design matrices `Z`, the penalty matrices `S`, the initial coefficients `coef`, the prediction design matrices `Z_predict`, the prediction grids `xseq`, and details for the basis expansion for each data stream. More details about `smooth_dens_construct()` are available in the function [documentation](https://janoleko.github.io/LaMa/reference/smooth_dens_construct.html).
+We can now have a look at what `smooth_dens_construc()` returns: a nested list containing the design matrices `Z`, the penalty matrices `S`, the initial coefficients `coef`, the prediction design matrices `Z_predict`, the prediction grids `xseq`, and details for the basis expansion for each data stream. More details about `smooth_dens_construct()` are available in the function [documentation](https://janoleko.github.io/LaMa/reference/smooth_dens_construct.html).
 
 
 ```{r extract matrices and object}

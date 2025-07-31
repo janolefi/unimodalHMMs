@@ -384,10 +384,10 @@ models”.</h1>
 the unimodal spline method described in the paper “Flexible unimodal
 density estimation in hidden Markov models”. In this paper, we develop a
 method to fit hidden Markov models with flexible, P-spline-based
-emission densities that are constrained to be unimodal. In the paper, we
-demonstrate how such constraints can make the model more robust against
-slight misspecification of the state process model which is often the
-case in practice.</p>
+emission densities that are constrained to be unimodal. We demonstrate
+how such constraints can make the model more robust against slight
+misspecification of the state process model which is often the case in
+practice.</p>
 <p>We begin by first loading relevant packages and sourcing custom
 helper functions.</p>
 </div>
@@ -428,7 +428,7 @@ the mode, we cannot predict in advance exactly where the mode of the
 spline function will be on the x-axis because the basis functions
 overlap. Thus a single coefficient doesn’t control the function height
 at a single point on the x-axis, but rather influences the entire region
-where the assoicated basis function is non-zero. So even if we have an
+where the associated basis function is non-zero. So even if we have an
 increasing then decreasing sequence of spline coefficients, the actual
 mode of the function might fall in the following locations: (1) In the
 first interval, (2) at the knot (<span class="math inline">\(x =
@@ -562,7 +562,7 @@ crucial for density estimation.</p>
 <pre><code>## logODBA 
 ## Leaving out last column of the penalty matrix, fix the last spline coefficient at zero for identifiability!
 ## Parameter matrix excludes the last column. Fix this column at zero!</code></pre>
-<p>We can now have a look of what <code>smooth_dens_construc()</code>
+<p>We can now have a look at what <code>smooth_dens_construc()</code>
 returns: a nested list containing the design matrices <code>Z</code>,
 the penalty matrices <code>S</code>, the initial coefficients
 <code>coef</code>, the prediction design matrices
