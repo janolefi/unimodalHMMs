@@ -1,6 +1,6 @@
 ---
 title: "R Tutorial to fit  unimodal spline method from the paper \"Flexible unimodal density estimation in hidden Markov models\"."
-output: html_document
+output: pdf_document
 bibliography: refs.bib
 link-citations: yes
 date: ""
