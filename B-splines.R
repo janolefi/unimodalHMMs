@@ -114,4 +114,3 @@ plot(x, rowSums(dspline), type = "l", bty = "n",
      main = "(c) Sum of basis functions", ylab = "Density", lwd = 2, 
      ylim = c(0, dnorm(5, 5, sd)))
 curve(dnorm(x, 5, sd), add = TRUE, col = "blue", n = 500)
-
