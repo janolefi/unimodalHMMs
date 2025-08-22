@@ -370,7 +370,7 @@ par(mfrow = c(2,2), mar = c(5,4,2,1) + 0.1)
 # parametric true
 plot(NA, xlim = c(-2, 8), ylim = c(0, 0.5), bty = "n", las = 1,
      ylab = "Density", xlab = "Observations")
-mtext("(a) Skewnorm / t", side = 3, adj = 0.5, line = 0.2, cex = 0.9)
+mtext("(a) Skew normal - t", side = 3, adj = 0.5, line = 0.2, cex = 0.9)
 for(i in 1:nresults){
   thismod = results[[i]]$mod_par
   delta = thismod$alpha / sqrt(1 + thismod$alpha^2)
@@ -465,7 +465,7 @@ auc_c = sapply(results, function(x) x$mod_c$auc)
 # correct for label switching
 auc_c[label_switch_c] = 1 - auc_c[label_switch_c]
 
-names = c("Skewnormal-t", "Normal", "Nonparametric", "Unimodal")
+names = c("Skew normal - t", "Normal", "Nonparametric", "Unimodal")
 AUC = data.frame(
   auc = c(auc_par, auc_par_norm, auc_np, auc_c),
   model = rep(names, each = nresults)
@@ -483,7 +483,7 @@ par(mfrow = c(1,1), mar = c(5,7,3,2)+0.1)
 boxplot(auc ~ model, data = AUC, ylim = c(0.97, 1), ylab = "", xlab = "AUC", main = "",
         horizontal = TRUE,
         pch = 20, col = "gray95", lwd = 0.5, outcol = "#00000030", frame = FALSE, las = 1)
-abline(v = median(AUC$auc[which(AUC$model == "Skewnormal-t")]), col = color[2], lty = 2)
+abline(v = median(AUC$auc[which(AUC$model == "Skew normal - t")]), col = color[2], lty = 2)
 # mtext("AUC", side = 2, line = 4, cex = 1)  # move y-axis label further from axis
 
 # dev.off()
