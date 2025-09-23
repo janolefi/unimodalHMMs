@@ -1,7 +1,18 @@
 library(splines2)
 library(LaMa) # only for dskewnorm()
 
-cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#0072B2", "red3", "yellow4" ,"plum", "#F0E442")
+cbPalette <- c(
+  "#E69F00", # orange
+  "#56B4E9", # sky blue
+  "#009E73", # bluish green
+  "#0072B2", # blue
+  "red3",    # red
+  "yellow4", # dark yellow/olive
+  "plum",    # purple
+  "#F0E442", # bright yellow
+  "#CC79A7", # reddish purple / pink
+  "#D55E00"  # vermillion / strong reddish-orange
+)
 cbPalette <- rep(cbPalette, 3)
 
 
@@ -9,7 +20,7 @@ to <- 10
 x <- seq(0, to, length = 1000)
 d <- 3
 
-k <- 8 # number of basis functions
+k <- 10 # number of basis functions
 knots <- seq(0, to, length = k-2)
 knots <- knots[2:(length(knots)-1)]
 # get B-spline design matrix
@@ -24,7 +35,7 @@ B_norm <- t(t(B) / w)
 
 # plotting
 
-# pdf("B-splines.pdf", width = 7, height = 3)
+pdf("B-splines.pdf", width = 7, height = 3)
 
 par(mfrow = c(1,3),
     mar = c(5,4,4,0.5))
@@ -49,10 +60,10 @@ for (i in 2:ncol(B_norm)) {
 
 
 # plot weighted B-splines basis -> density
-k <- 15
-knots <- seq(0, to, length = k-2)
-knots <- knots[2:(length(knots)-1)]
-B <- bSpline(x, knots = knots, Boundary.knots = c(0,to), degree = d, intercept = TRUE)
+# k <- 15
+# knots <- seq(0, to, length = k-2)
+# knots <- knots[2:(length(knots)-1)]
+# B <- bSpline(x, knots = knots, Boundary.knots = c(0,to), degree = d, intercept = TRUE)
 
 # compute integrals of basis functions
 w <- colSums(t(t(B))) * diff(x)[1]
@@ -61,21 +72,25 @@ B_norm <- t(t(B) / w)
 basis_pos <- colSums(x * t(t(B_norm))) * diff(x)[1]
 
 # coefficients
-b <- dskewnorm(basis_pos, 2.2, 2.1, 4, log = TRUE)
+b <- dskewnorm(basis_pos, 2.1, 2.2, 4, log = TRUE)
 b <- b - min(b)
 a <- exp(b)
+a <- a / sum(a)
+a[2] <- 0.01
+a[9] <- 0.001
+a[10] <- 0
 a <- a / sum(a)
 
 dspline <- t(t(B_norm) * a)
 plot(x, dspline[,1] , type = "l", bty = "n", ylim = c(0, 0.35),
      main = "(c) Sum of basis functions", ylab = "Density",
-     col = cbPalette[1], lwd = 1)
+     col = cbPalette[1], lwd = lwd)
 for (i in 2:ncol(B_norm)) {
-  lines(x, dspline[,i], col = cbPalette[i], lwd = 1)
+  lines(x, dspline[,i], col = cbPalette[i], lwd = lwd)
 }
-lines(x, rowSums(dspline), lwd = lwd)
+lines(x, rowSums(dspline), lwd = 2.5)
 
-# dev.off()
+dev.off()
 
 
 
