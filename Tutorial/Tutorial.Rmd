@@ -69,7 +69,7 @@ Let us consider three sequences of spline coefficients, each with a mode at $\al
 # Define increasing then decreasing sequence of spline coefficients:
 alpha1 <- c(2, 9, 10, 2, 0.1)  # mode is in [0, 0.5)
 spline1 <- bsMat %*% alpha1
-alpha2 <- c(1, 2, 10, 2, 1) # the mode is at the knot
+alpha2 <- c(1, 2, 10, 2, 1) # the mode is at the knot, x = 0.5
 spline2 <- bsMat %*% alpha2
 alpha3 <- c(0.1, 2, 10, 9, 2)  # mode is in (0.5, 1]
 spline3 <- bsMat %*% alpha3 
@@ -127,7 +127,7 @@ Now that we have a better intuition for the unimodality constraint and the mode'
 head(nessi)
 ```
 
-The dataset contains three columns: the overall dynamic body acceleration (`ODBA`) of the monster, `logODBA`, which represents the logarithm of `ODBA` and is our variable of interest, and the `state` column, which indicates the behavioural state of the monster. The `state` ranges from 1 to 3, as **nessi** was simulated with a three-state hidden Markov model (HMM). 
+The dataset contains three columns: the overall dynamic body acceleration (`ODBA`) of the monster, `logODBA`, which represents the logarithm of `ODBA` and is our variable of interest, and the `state` column, which indicates the behavioural state of the monster. The `state` ranges from 1 to 3, as `nessi` was simulated with a three-state hidden Markov model (HMM). 
 However, for the subsequent analyis, we will pretend that we do not know the true states.
 Since `ODBA` is strictly positive with some extreme values, direct analysis can be difficult. Therefore, for our analysis, we consider the logarithm of `ODBA` as our observed process. We will fit a three-state HMM with unimodal nonparametric state-dependent distributions.
 
@@ -165,7 +165,7 @@ modmat <- smooth_dens_construct(
 )
 ```
 
-We can now have a look at what `smooth_dens_construc()` returns: a nested list containing the design matrices `Z`, the penalty matrices `S`, the initial coefficients `coef`, the prediction design matrices `Z_predict`, the prediction grids `xseq`, and details for the basis expansion for each data stream. More details about `smooth_dens_construct()` are available in the function [documentation](https://janoleko.github.io/LaMa/reference/smooth_dens_construct.html).
+We can now have a look at what `smooth_dens_construct()` returns: a nested list containing the design matrices `Z`, the penalty matrices `S`, the initial coefficients `coef`, the prediction design matrices `Z_predict`, the prediction grids `xseq`, and details for the basis expansion for each data stream. More details about `smooth_dens_construct()` are available in the function [documentation](https://janoleko.github.io/LaMa/reference/smooth_dens_construct.html).
 
 
 ```{r extract matrices and object}

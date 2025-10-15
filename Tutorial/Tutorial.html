@@ -457,7 +457,7 @@ mode in the function at different locations.</p>
 <pre class="r"><code># Define increasing then decreasing sequence of spline coefficients:
 alpha1 &lt;- c(2, 9, 10, 2, 0.1)  # mode is in [0, 0.5)
 spline1 &lt;- bsMat %*% alpha1
-alpha2 &lt;- c(1, 2, 10, 2, 1) # the mode is at the knot
+alpha2 &lt;- c(1, 2, 10, 2, 1) # the mode is at the knot, x = 0.5
 spline2 &lt;- bsMat %*% alpha2
 alpha3 &lt;- c(0.1, 2, 10, 9, 2)  # mode is in (0.5, 1]
 spline3 &lt;- bsMat %*% alpha3 
@@ -542,7 +542,7 @@ acceleration (<code>ODBA</code>) of the monster, <code>logODBA</code>,
 which represents the logarithm of <code>ODBA</code> and is our variable
 of interest, and the <code>state</code> column, which indicates the
 behavioural state of the monster. The <code>state</code> ranges from 1
-to 3, as <strong>nessi</strong> was simulated with a three-state hidden
+to 3, as <code>nessi</code> was simulated with a three-state hidden
 Markov model (HMM). However, for the subsequent analyis, we will pretend
 that we do not know the true states. Since <code>ODBA</code> is strictly
 positive with some extreme values, direct analysis can be difficult.
