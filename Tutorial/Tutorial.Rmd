@@ -20,6 +20,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 In this ``R`` tutorial, we illustrate the implementation of the unimodal spline method described in the paper "Flexible unimodal density estimation in hidden Markov models" [@koslik2025unimodal]. In that paper, we develop a method to fit hidden Markov models with flexible, P-spline-based emission densities that are constrained to be unimodal. We demonstrate how such constraints can make the model more robust against slight misspecification of the state process model which is often the case in practice.
 
+The corresponding `.Rmd` file can be found [here](https://github.com/janoleko/unimodalHMMs/blob/main/Tutorial/Tutorial.Rmd).
+
 We begin by first loading relevant packages and sourcing custom helper functions.
 
 ```{r load required packages,message=FALSE,warning=FALSE}
@@ -29,6 +31,8 @@ library(LaMa)
 
 
 ## 2. Understanding the mode location in unimodal splines
+
+We place unimodality restrictions on a vector of coefficients in order to restrict a density function to be unimodal. This section explains the connection between these two restrictions, and how the location of the mode of the function is not easily relatable to the restrictions on the coefficients. This section, which contains some technical details, can be skipped at first reading.
 
 We start by defining a funcion $f$ in terms of a B-spline expansion, that is
 $$
@@ -53,7 +57,7 @@ bsMat <- bSpline(x, knots = knots, Boundary.knots = c(0,1), degree = degree, int
 
 Let’s take a look at the 5 basis functions.
 
-```{r basis function }
+```{r basis function}
 plot(bsMat, mark_knots = "all") 
 title("B-spline basis functions")
 ```

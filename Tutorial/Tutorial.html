@@ -388,6 +388,7 @@ P-spline-based emission densities that are constrained to be unimodal.
 We demonstrate how such constraints can make the model more robust
 against slight misspecification of the state process model which is
 often the case in practice.</p>
+<p>The corresponding <code>.Rmd</code> file can be found <a href="https://github.com/janoleko/unimodalHMMs/blob/main/Tutorial/Tutorial.Rmd">here</a>.</p>
 <p>We begin by first loading relevant packages and sourcing custom
 helper functions.</p>
 <pre class="r"><code>library(splines2)
@@ -395,6 +396,12 @@ library(LaMa)</code></pre>
 </div>
 <div id="understanding-the-mode-location-in-unimodal-splines" class="section level2">
 <h2>2. Understanding the mode location in unimodal splines</h2>
+<p>We place unimodality restrictions on a vector of coefficients in
+order to restrict a density function to be unimodal. This section
+explains the connection between these two restrictions, and how the
+location of the mode of the function is not easily relatable to the
+restrictions on the coefficients. This section, which contains some
+technical details, can be skipped at first reading.</p>
 <p>We start by defining a funcion <span class="math inline">\(f\)</span>
 in terms of a B-spline expansion, that is <span class="math display">\[
 f(x) = \sum_{k = 1}^K \alpha_k B_k(x),
@@ -582,7 +589,7 @@ matches our constraints for density estimation.</p>
 <pre><code>## logODBA 
 ## Leaving out last column of the penalty matrix, fix the last spline coefficient at zero for identifiability!
 ## Parameter matrix excludes the last column. Add a (fixed) zero column using &#39;cbind(coef, 0)&#39; in your loss function!</code></pre>
-<p>We can now have a look at what <code>smooth_dens_construc()</code>
+<p>We can now have a look at what <code>smooth_dens_construct()</code>
 returns: a nested list containing the design matrices <code>Z</code>,
 the penalty matrices <code>S</code>, the initial coefficients
 <code>coef</code>, the prediction design matrices
