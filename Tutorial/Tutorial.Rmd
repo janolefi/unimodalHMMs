@@ -1,5 +1,5 @@
 ---
-title: "R Tutorial to fit  unimodal spline method from the paper \"Flexible unimodal density estimation in hidden Markov models\"."
+title: "R Tutorial to fit  unimodal spline method from the paper \"Flexible unimodal density estimation in hidden Markov models"
 output: html_document
 bibliography: refs.bib
 link-citations: yes
@@ -29,16 +29,19 @@ library(splines2)
 library(LaMa)
 ```
 
+```{r TapeConfig, echo = FALSE}
+RTMB::TapeConfig(matmul = "plain")
+```
 
 ## 2. Understanding the mode location in unimodal splines
 
 We place unimodality restrictions on a vector of coefficients in order to restrict a density function to be unimodal. This section explains the connection between these two restrictions, and how the location of the mode of the function is not easily relatable to the restrictions on the coefficients. This section, which contains some technical details, can be skipped at first reading.
 
-We start by defining a funcion $f$ in terms of a B-spline expansion, that is
+We start by defining a function $f$ in terms of a B-spline expansion, that is
 $$
 f(x) = \sum_{k = 1}^K \alpha_k B_k(x),
 $$
-where $B_k(x)$ are B-spline basis functions and $\alpha_k$ are the spline coefficients, controlling the shape of $f$.
+where $B_1, \dots, B_K$ are B-spline basis functions and $\alpha_1, \dots, \alpha_K$ are the spline coefficients, controlling the shape of $f$.
 Let us take a moment to think through how the mode location of $f$ interacts with a mode in the coefficient sequence $\alpha_1, \dots, \alpha_K$ of the expansion. We start with a basic example. Suppose we have $5$ B-spline basis functions defined on [0,1], which means we also have $5$ corresponding spline coefficients, denoted as $\alpha_1,\alpha_2, \alpha_3, \alpha_4,\alpha_5$. These basis functions are typically defined by a set of knots, and for simplicity, let’s assume just one interior knot at $x = 0.5$. This knot splits the domain [0,1] into two intervals:
 
 * [0,0.5)
@@ -47,7 +50,7 @@ Let us take a moment to think through how the mode location of $f$ interacts wit
 ```{r define knots and spline coefficients,message=FALSE}
 knots <- seq(0, 1, by = 0.5) 
 knots <- knots[2:(length(knots)-1)] # interior knot sequence
-# Note: bSpline chooses boundary knots as max, min of x - but can specify separately
+# Note: bSpline sets default boundary knots as max, min of x - but user can specify
 degree <- 3 # degree of the B-spline basis - here cubic
 x <- seq(0, 1, by = 0.01) # evaluation points
 bsMat <- bSpline(x, knots = knots, Boundary.knots = c(0,1), degree = degree, intercept = TRUE)
@@ -67,15 +70,15 @@ As we described in the main manuscript, to enforce unimodality (i.e., the fact t
 Because unimodality is enforced via constraints on the spline coefficients, and not directly on the function values or the location of the mode, we cannot predict in advance exactly where the mode of the spline function will be on the x-axis because the basis functions overlap. Thus a single coefficient doesn't control the function height at a single point on the x-axis, but rather influences the entire region where the associated basis function is non-zero. So even if we have an increasing then decreasing sequence of spline coefficients, the actual mode of the function might fall in the following locations:
 (1) In the first interval $[0.0, 0.5)$, (2) at the knot ($x = 0.5$), or (3) in the second interval $(0.5, 1.0)$, depending on the interaction of the coefficients. 
 
-Let us consider three sequences of spline coefficients, each with a mode at $\alpha_3$, but producing a mode in the function at different locations.
+Let us consider three sequences of spline coefficients, each with a mode at $\alpha_3$, but producing a mode in the function at different locations, with the function's mode location seen in the plot of the function, below.
 
-```{r beta configurations,fig.width=7, fig.height=5}
+```{r beta configurations, fig.width=7, fig.height=5}
 # Define increasing then decreasing sequence of spline coefficients:
-alpha1 <- c(2, 9, 10, 2, 0.1)  # mode is in [0, 0.5)
+alpha1 <- c(2, 9, 10, 2, 0.1) # function's mode is in [0, 0.5)
 spline1 <- bsMat %*% alpha1
-alpha2 <- c(1, 2, 10, 2, 1) # the mode is at the knot, x = 0.5
+alpha2 <- c(1, 2, 10, 2, 1)   # function's mode is at the knot, x = 0.5
 spline2 <- bsMat %*% alpha2
-alpha3 <- c(0.1, 2, 10, 9, 2)  # mode is in (0.5, 1]
+alpha3 <- c(0.1, 2, 10, 9, 2) # function's mode is in (0.5, 1]
 spline3 <- bsMat %*% alpha3 
 
 par(mar = c(5, 4, 4, 8), xpd = TRUE)  # xpd=TRUE allows drawing outside plot
@@ -94,7 +97,7 @@ legend("topright", inset = c(-0.33, 0),  # negative x inset pushes legend outsid
        cex = 0.8)
 ```
 
-Observe that in all three cases, the peak value of the sequence $\alpha_1,\ldots,\alpha_5$ occurs at the third coefficient. However, the mode of the function $f$ (i.e., the location in the x-axis where the function reaches its maximum) differs across the three examples. This illustrates an important point: the location of the peak in $f$ is influenced not only by where the $\alpha'$s peak is in the sequence, but also by the shape and placement of the B-spline basis functions and the specific values of all coefficients. In other words, even with the same unimodality constraint on the coefficients, the interaction between the $\alpha'$s and the basis functions can shift the location of the mode in the function output. This is something to keep in mind when interpreting or designing unimodal spline models.
+Observe that in all three cases, the peak value of the sequence $\alpha_1, \ldots, \alpha_5$ occurs at the third coefficient. However, the mode of the function $f$ (i.e., the location in the x-axis where the function reaches its maximum) differs across the three examples. This illustrates an important point: the location of the peak in $f$ is influenced not only by where the $\alpha'$s peak is in the sequence, but also by the shape and placement of the B-spline basis functions and the specific values of all coefficients. In other words, even with the same unimodality constraint on the coefficients, the interaction between the $\alpha'$s and the basis functions can shift the location of the mode in the function output. This is something to keep in mind when interpreting or designing unimodal spline models.
 
 Observe that we only considered the "conventional" unimodality definition as increasing then decreasing sequence.
 However, unimodality can also be achieved with other valid configurations. For example:
@@ -102,14 +105,13 @@ However, unimodality can also be achieved with other valid configurations. For e
 - constant then decreasing 
 - increasing then constant 
 
-
 These alternative shapes still satisfy the definition of unimodality — having a single peak — but allow for plateau or shoulders rather than a sharp maximum. Below, we illustrate these two alternative cases:
 
 ```{r alternative seq}
-alpha4 <- c(3, 3, 3, 2, 1)  # flat then decreasing
+alpha4 <- c(3, 3, 3, 2, 1)  # coefficients flat then decreasing
 spline4 <- bsMat %*% alpha4
 
-alpha5 <- c(1, 2, 3, 3, 3)  # increasing then flat
+alpha5 <- c(1, 2, 3, 3, 3)  # coefficients increasing then flat
 spline5 <- bsMat %*% alpha5
 
 par(mar = c(5, 4, 4, 8), xpd = TRUE)
@@ -125,16 +127,17 @@ legend("topright", inset = c(-0.33, 0),
 
 ## 3. Unimodal splines for HMMs
 
-Now that we have a better intuition for the unimodality constraint and the mode's location, we will fit unimodal splines to a dataset. To demonstrate the application of nonparametric unimodal estimation for state-dependent densities within HMMs, we will use the `nessi` dataset and the `LaMa` `R` package. For detailed instructions on how to use the `LaMa` package to fit nonparametric densities, refer to the `LaMa` vignette on [Penalised Splines](https://janoleko.github.io/LaMa/articles/Penalised_splines.html). We will work on the simulated acceleration data of the Loch Ness Monster. More specifically, we will work on the overall dynamic body acceleration (ODBA) datastream. 
+Now that we have a better intuition for the unimodality constraint and the mode's location, we will fit unimodal splines to a dataset. To demonstrate the application of nonparametric unimodal estimation for state-dependent densities within HMMs, we will use the `nessi` dataset which is part of the `LaMa` `R` package. For detailed instructions on how to use the `LaMa` package to fit nonparametric densities, refer to the `LaMa` vignette on [Penalised Splines](https://janoleko.github.io/LaMa/articles/Penalised_splines.html). We will work on the acceleration data of the Loch Ness Monster. More specifically, we will work on the overall dynamic body acceleration (ODBA) datastream. Here, we only use the first 1000 observations to speed up computations.
 
 ```{r look at data}
-head(nessi)
+data <- nessi[1:1000, 1:2] # only using the first 1000 observations for this example
+head(data)
 ```
-
-The dataset contains three columns: the overall dynamic body acceleration (`ODBA`) of the monster, `logODBA`, which represents the logarithm of `ODBA` and is our variable of interest, and the `state` column, which indicates the behavioural state of the monster. The `state` ranges from 1 to 3, as `nessi` was simulated with a three-state hidden Markov model (HMM). 
-However, for the subsequent analyis, we will pretend that we do not know the true states.
-Since `ODBA` is strictly positive with some extreme values, direct analysis can be difficult. Therefore, for our analysis, we consider the logarithm of `ODBA` as our observed process. We will fit a three-state HMM with unimodal nonparametric state-dependent distributions.
-
+The first column of the dataset contains said overall dynamic body acceleration (`ODBA`) of the monster as a measure of its activity level.
+<!-- The dataset contains three columns: the overall dynamic body acceleration (`ODBA`) of the monster, `logODBA`, which represents the logarithm of `ODBA` and is our variable of interest, and the `state` column, which indicates the behavioural state of the monster. The `state` ranges from 1 to 3, as `nessi` was simulated with a three-state hidden Markov model (HMM).  -->
+<!-- However, for the subsequent analyis, we will pretend that we do not know the true states. -->
+Since `ODBA` is strictly positive with some extreme values, direct analysis can be difficult. Therefore, for our analysis, we consider the logarithm of `ODBA` as our observed process, which is precomputed in the second column of the dataset (`logODBA`). 
+We will fit a three-state HMM with unimodal nonparametric state-dependent distributions.
 
 First, let us specify the model we will fit to our data. To do so, we use the `smooth_dens_construct()` function, available in `LaMa`.
 
@@ -142,22 +145,19 @@ We set the following arguments:
 
 - `"data"`: dataframe containing data streams for the HMM. These can be of different types (`real`, `positive`, `circular`). This information is then converted into a suitable B-spline basis for density estimation.
 
-- `"par"`: nested named list of initial means and sds/concentrations for each data stream. This information is converted into initial guesses for the spline coefficients to facilitate easier numerical estimation.
+- `"par"`: nested named list of initial means and standard deviations/concentrations for each data stream. This information is converted into initial guesses for the spline coefficients to facilitate easier numerical estimation.
 
-- `"type"`: For each data stream, either "real" for data on the reals, "positive" for data on the positive reals or "circular" for angular data. Needs to be a vector corresponding to the number of data streams in `data`.
+- `"type"`: For each data stream, either "real" for data on the reals, "positive" for data on the positive reals or "circular" for angular data. Needs to be a vector with length equal to the number of data streams in `data`.
 
 - `"k"`:  number of basis functions for each data stream
 
 - `"knots"`: optional named list of knots vectors (including the boundary knots) to be used for basis construction. If not provided, the knots are placed equidistantly for "real" and "circular" and using polynomial spacing for "positive".
 
-
 `smooth_dens_construct()` then builds the P-spline design and penalty matrices for each data stream as well as a matrix of initial spline coefficients based on the provided parameters. The basis functions are standardised such that they integrate to one, which matches our constraints for density estimation.
 
-```{r set the framework,echo=FALSE}
+```{r set the framework}
 # set the arguments
 k <- 25 # basis dimension
-nObs <- 1000 # number of observations we will use
-data <- nessi[1:nObs, ] # only using the first 1000 observations for this example
 par0 <- list(logODBA = list(mean = c(-4, -3, -2.5), # guesses for initial mean
                             sd = c(0.3, 0.5, 0.5))) # guesses for initial sd
 # used to construct initial guesses of spline coefficients
@@ -169,7 +169,7 @@ modmat <- smooth_dens_construct(
 )
 ```
 
-We can now have a look at what `smooth_dens_construct()` returns: a nested list containing the design matrices `Z`, the penalty matrices `S`, the initial coefficients `coef`, the prediction design matrices `Z_predict`, the prediction grids `xseq`, and details for the basis expansion for each data stream. More details about `smooth_dens_construct()` are available in the function [documentation](https://janoleko.github.io/LaMa/reference/smooth_dens_construct.html).
+We can now have a look at what `smooth_dens_construct()` returns, contained in `modmat`: a nested list containing the design matrices `Z`, the penalty matrices `S`, the initial coefficients `coef`, the prediction design matrices `Z_predict`, the prediction grids `xseq`, and details for the basis expansion for each data stream. More details about `smooth_dens_construct()` are available in the function [documentation](https://janoleko.github.io/LaMa/reference/smooth_dens_construct.html).
 
 
 ```{r extract matrices and object}
@@ -190,7 +190,7 @@ Before minimising the negative penalised log likelihood, we need to define the i
 
 ```{r define par and dat}
 # coefficient mode position for each state
-m <- c(8, 12, 15) # one index per state, index <= 25
+m <- c(8, 12, 15) # one index per state, index <= 25, the number of alphas used
 
 # initialise parameters
 par0 <- list(beta0 = rep(-2, 6), # initial transition matrix on logit scale
@@ -207,7 +207,7 @@ mydat <- list(N = N, # number of states
 
 ```
 
-Observe that beta has $24$ columns, instead of $25$. This is because the last column, which corresponds to the last coefficient for each state, needs to be fixed to zero for identifiability which we do in the seventh line of `pnll` below using `cbind(beta, 0)`. Then, we transform the unconstrained parameter matrix to non-negative weights that sum to one -- $\alpha$ in [@koslik2025unimodal] -- for each state using the inverse multinomial logistic link. The columns of the allprobs matrix are then computed as linear combinations of the columns of $Z$ and the weights `alpha`. We then penalise the unconstrained coefficients `beta` using the ``penalty()`` function. This helps prevent the estimated densities from overfitting by becoming too wiggly. Finally, we apply the unimodality constraint on the `beta`'s using the `penalty_uni()` function.
+Observe that `beta` has $24$ columns, instead of $25$. This is because the last column, which corresponds to the last coefficient for each state, needs to be fixed to zero for identifiability which we do in the seventh line of `pnll` below using `cbind(beta, 0)`. Then, we transform the unconstrained parameter matrix to non-negative weights that sum to one -- getting $\alpha$ as in @koslik2025unimodal -- for each state using the inverse multinomial logistic link. The columns of the `allprobs` matrix are then computed as linear combinations of the columns of $Z$ and the weights `alpha`. We then penalise the unconstrained coefficients `beta` using the ``penalty()`` function. This helps prevent the estimated densities from overfitting by becoming too wiggly. Finally, we apply the unimodality constraint on the `beta`'s using the `penalty_uni()` function.
 Note that we place the unimodality penalty on the reweighted coefficients `beta + logweights`. This is because the penalty needs to be on the scale of the original B-spline basis, which was standardised to integrate to one by `smooth_dens_construct()`. The reweighting is done to ensure that the unimodality constraint is applied correctly, as described in the main manuscript (Equation (5)).
 
 ```{r pnll}
@@ -224,7 +224,7 @@ pnll = function(par){
   allprobs <- matrix(1, nrow(Z), N)
   ind <- which(!is.na(Z[,1])) # NA handling
   # now just linear combinations of precomputed basis functions in Z
-  allprobs[ind,] <- Z[ind,] %*% t(alpha) # this does Z %*% alpha[i,] for all states at once
+  allprobs[ind,] <- Z[ind,] %*% t(alpha) # this calculates Z %*% alpha[i,] for all states at once
   # forward algorithm + smoothness penalty + unimodality penalty
   - forward(delta, Gamma, allprobs) + 
     penalty(beta, S, lambda) + 
@@ -236,7 +236,7 @@ We jointly estimate the model coefficients and the optimal degree of smoothness 
 
 ```{r fit model, cache = TRUE}
 mod <- qreml(pnll, par0, mydat, 
-            random = "beta") # telling the model what are spline coefficients/ random effects
+             random = "beta") # telling the model what are spline coefficients/ random effects
 ```
 
 Now let us have a look at the model output, using the fitted results contained in `mod`.
@@ -254,13 +254,12 @@ Deltas <- mod$delta
 # Compute marginal density
 marDens <- colSums(t(Dens) * Deltas)
 
+# Plot histograms of data and density estimates
 color <- c("#E69F00", "#56B4E9", "#009E73")
 par(mfrow = c(1,1))
 hist(data$logODBA, prob = TRUE, breaks = 50, bor = "white", 
      main = "Estimated state-dependent densities", xlab = "log(ODBA)")
-for(i in 1:N){
-    lines(xseq, Deltas[i] * Dens[,i], col = color[i], lwd = 2)
-}
+for(i in 1:N) lines(xseq, Deltas[i] * Dens[,i], col = color[i], lwd = 2)
 lines(xseq, marDens, lty = 2, lwd = 2)
 ```
 
@@ -279,7 +278,7 @@ scaled by a large penalty parameter (called `kappa` in `penalty_uni()`) to stron
 $$
 \text{min}(x, 0) \approx \; -\frac{1}{\rho} \log\bigl[1 + \exp(- \rho x)\bigr], % \equiv M_{\rho}(x),
 $$
-implemented in the function `min0_smooth()`, to ensure continuity and differentiability in the optimization process. The parameter `rho` (defaulting to 20) controls the smoothness of the approximation: the larger, the closer to the minimum function as we can see in the plot below.
+implemented in the function `min0_smooth()`, to ensure continuity and differentiability in the optimization process. The parameter `rho` (defaulting to 20) controls the smoothness of the approximation: the larger, the closer to the minimum function, as we can see in the plot below.
 
 ```{r explore with different rho values}
 ## Plotting the smooth approximation for different rho values
@@ -332,7 +331,7 @@ mydat <- list(N = N, # number of states
               logweights = t(log(w[-k] / w[k]))[rep(1, N), ]) # weights
 ```
 
-We can then fit a model for each combination of indices. In total, this involves fitting length(m1) $\times$ length(m2) $\times$ length(m3) models, which amounts to 48 in our case. For convenience, we currently explore only one randomly selected initial value `par0`, but ideally, we should examine more, meaning even more models to fit.
+We can then fit a model for each combination of indices. In total, this involves fitting `length(m1)` $\times$ `length(m2)` $\times$ `length(m3)` models, which amounts to 48 in our case. For convenience, we currently explore only one randomly selected initial value `par0`, but ideally, we should examine more, meaning even more models to fit.
 
 ```{r fit likelihoods per set of indices, include = TRUE, cache = TRUE}
 # maximizing the likelihood for each set of mode locations
@@ -344,22 +343,21 @@ for(i in 1:nrow(m_grid)){
 }
 ```
 
+```{r TapeConfig2, echo = FALSE}
+RTMB::TapeConfig(matmul = "plain")
+```
+
 ```{r get the best model, and fit again, cache = TRUE}
 # Find the mode estimates with largest likelihood
 (m_opt <- m_grid[which.max(llks), ])
 
-# Update constraint matrix with the optimal mode
+# Update the optimal mode
 mydat$m <- m_opt
-mydat$kappa <- 1e3 * 2
-
-# Update parameters using the previous model fit
-par0$beta <- mod$par0$beta
-mydat$lambda <- mod$lambda * 2
 
 # Fit the model
 mod_c <- qreml(pnll, par0, mydat, random = "beta")
 
-# Get the results
+# Calculate the unimodal densities
 alpha_c <- mod_c$alpha
 delta_c <- mod_c$delta
 dens_c <- t(delta_c * t(Z_p %*% t(alpha_c)))
@@ -368,7 +366,7 @@ dens_c <- t(delta_c * t(Z_p %*% t(alpha_c)))
 Now, we can have a look at our final estimated state-dependent densities.
 
 ```{r }
-# state-dependent and marginal distributions
+# plot state-dependent and marginal distributions
 par(mfrow = c(1,1))
 
 hist(data$logODBA, breaks = 30, prob = TRUE, bor = "white",
