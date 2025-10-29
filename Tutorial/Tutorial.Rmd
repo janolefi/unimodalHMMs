@@ -1,6 +1,6 @@
 ---
 title: "R Tutorial to fit  unimodal spline method from the paper \"Flexible unimodal density estimation in hidden Markov models"
-output: pdf_document
+output: html_document
 bibliography: refs.bib
 link-citations: yes
 date: ""
@@ -99,31 +99,31 @@ legend("topright", inset = c(-0.33, 0),  # negative x inset pushes legend outsid
 
 Observe that in all three cases, the peak value of the sequence $\alpha_1, \ldots, \alpha_5$ occurs at the third coefficient. However, the mode of the function $f$ (i.e., the location in the x-axis where the function reaches its maximum) differs across the three examples. This illustrates an important point: the location of the peak in $f$ is influenced not only by where the $\alpha'$s peak is in the sequence, but also by the shape and placement of the B-spline basis functions and the specific values of all coefficients. In other words, even with the same unimodality constraint on the coefficients, the interaction between the $\alpha'$s and the basis functions can shift the location of the mode in the function output. This is something to keep in mind when interpreting or designing unimodal spline models.
 
-Observe that we only considered the "conventional" unimodality definition as increasing then decreasing sequence.
-However, unimodality can also be achieved with other valid configurations. For example:
+<!-- Observe that we only considered the "conventional" unimodality definition as increasing then decreasing sequence. -->
+<!-- However, unimodality can also be achieved with other valid configurations. For example: -->
 
-- constant then decreasing 
-- increasing then constant 
+<!-- - constant then decreasing  -->
+<!-- - increasing then constant  -->
 
-These alternative shapes still satisfy the definition of unimodality — having a single peak — but allow for plateau or shoulders rather than a sharp maximum. Below, we illustrate these two alternative cases:
+<!-- These alternative shapes still satisfy the definition of unimodality — having a single peak — but allow for plateau or shoulders rather than a sharp maximum. Below, we illustrate these two alternative cases: -->
 
-```{r alternative seq}
-alpha4 <- c(3, 3, 3, 2, 1)  # coefficients flat then decreasing
-spline4 <- bsMat %*% alpha4
+<!-- ```{r alternative seq} -->
+<!-- alpha4 <- c(3, 3, 3, 2, 1)  # coefficients flat then decreasing -->
+<!-- spline4 <- bsMat %*% alpha4 -->
 
-alpha5 <- c(1, 2, 3, 3, 3)  # coefficients increasing then flat
-spline5 <- bsMat %*% alpha5
+<!-- alpha5 <- c(1, 2, 3, 3, 3)  # coefficients increasing then flat -->
+<!-- spline5 <- bsMat %*% alpha5 -->
 
-par(mar = c(5, 4, 4, 8), xpd = TRUE)
-plot(x, spline4, type = "l", ylab = "f(x)", col = "purple", lwd = 2)
-lines(x, spline5, col = "darkorange", lwd = 2)
-title("Alternative unimodal shapes")
-legend("topright", inset = c(-0.33, 0),
-       legend = c("Flat then decreasing", "Increasing then flat"),
-       col = c("purple", "darkorange"),
-       lwd = 2,
-       cex = 0.8)
-```
+<!-- par(mar = c(5, 4, 4, 8), xpd = TRUE) -->
+<!-- plot(x, spline4, type = "l", ylab = "f(x)", col = "purple", lwd = 2) -->
+<!-- lines(x, spline5, col = "darkorange", lwd = 2) -->
+<!-- title("Alternative unimodal shapes") -->
+<!-- legend("topright", inset = c(-0.33, 0), -->
+<!--        legend = c("Flat then decreasing", "Increasing then flat"), -->
+<!--        col = c("purple", "darkorange"), -->
+<!--        lwd = 2, -->
+<!--        cex = 0.8) -->
+<!-- ``` -->
 
 ## 3. Unimodal splines for HMMs
 
@@ -211,7 +211,7 @@ Observe that `beta` has $24$ columns, instead of $25$. This is because the last 
 Note that we place the unimodality penalty on the reweighted coefficients `beta + logweights`. This is because the penalty needs to be on the scale of the original B-spline basis, which was standardised to integrate to one by `smooth_dens_construct()`. The reweighting is done to ensure that the unimodality constraint is applied correctly, as described in the main manuscript (Equation (5)).
 
 ```{r pnll}
-pnll = function(par){
+pnll <- function(par){
   getAll(par, dat)
   ## state process model
   Gamma <- tpm(beta0)
