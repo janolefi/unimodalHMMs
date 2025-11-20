@@ -5,3 +5,4 @@
 simulations/*.rds
 simulations/results
 narwal_case_study/analysis_old.R
+narwal_case_study/data/DiffDepth_TimeSeries.RData
