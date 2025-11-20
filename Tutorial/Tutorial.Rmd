@@ -234,7 +234,7 @@ pnll <- function(par){
 
 We jointly estimate the model coefficients and the optimal degree of smoothness using the `qreml()` function, an approximate restricted maximimum likelihood procedure [@koslik2024efficient]. See the `LaMa` vignette on [Penalised Splines](https://janoleko.github.io/LaMa/articles/Penalised_splines.html) for more details.
 
-```{r fit model, cache = TRUE}
+```{r fit model, cache = FALSE}
 mod <- qreml(pnll, par0, mydat, 
              random = "beta") # telling the model what are spline coefficients/ random effects
 ```
@@ -333,7 +333,7 @@ mydat <- list(N = N, # number of states
 
 We can then fit a model for each combination of indices. In total, this involves fitting `length(m1)` $\times$ `length(m2)` $\times$ `length(m3)` models, which amounts to 48 in our case. For convenience, we currently explore only one randomly selected initial value `par0`, but ideally, we should examine more, meaning even more models to fit.
 
-```{r fit likelihoods per set of indices, include = TRUE, cache = TRUE}
+```{r fit likelihoods per set of indices, include = TRUE, cache = FALSE}
 # maximizing the likelihood for each set of mode locations
 llks <- rep(NA, nrow(m_grid))
 for(i in 1:nrow(m_grid)){
@@ -347,7 +347,7 @@ for(i in 1:nrow(m_grid)){
 RTMB::TapeConfig(matmul = "plain")
 ```
 
-```{r get the best model, and fit again, cache = TRUE}
+```{r get the best model, and fit again, cache = FALSE}
 # Find the mode estimates with largest likelihood
 (m_opt <- m_grid[which.max(llks), ])
 
