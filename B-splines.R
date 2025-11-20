@@ -98,6 +98,7 @@ lines(x, rowSums(dspline), lwd = 2.5)
 # Initialisation strategy explained ---------------------------------------
 
 par(mfrow = c(1,1))
+
 # Below, we briefly explain how the spline coefficients are initialised using a 
 # parametric reference density. This happens automatically when calling
 # smooth_dens_construct()
