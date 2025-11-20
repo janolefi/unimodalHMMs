@@ -1,8 +1,9 @@
 ## packages and utility functions
-# devtools::install_github("janoleko/LaMa") 
-# development version has correction of parameter setup for smooth densities
 library(LaMa)
 source("./utils.R")
+
+# faster estimation speeds
+TapeConfig(matmul = "plain")
 
 
 ## loading the narwhal data
