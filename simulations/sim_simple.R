@@ -1,6 +1,5 @@
 ## simulating an HSMM and fitting an HMM
 
-# devtools::install_github("janoleko/LaMa")
 library(LaMa)
 library(parallel)
 library(scales)
@@ -351,7 +350,7 @@ Sys.time() - t1
 
 
 ## Save results
-# saveRDS(results, file = "./simulations/results/simple_sim100_new.rds")
+saveRDS(results, file = "./simulations/results/simple_sim100.rds")
 results = readRDS("./simulations/results/simple_sim100.rds")
 
 

@@ -1,13 +1,11 @@
 ## simulating an HSMM and fitting an HMM
 
-# devtools::install_github("janoleko/LaMa")
 library(LaMa)
 library(parallel)
 library(scales)
 
 source("./utils.R")
 
-# color = c("orange", "deepskyblue")
 
 # first state: mixture of two Poisson distributions
 # second state: regular geometric dwell times
@@ -241,8 +239,8 @@ for(i in 1:n_sim){
 }
 
 ## Save results
-# saveRDS(results, file = "./simulations/results/hsmm_sim4.rds")
-results = readRDS("./simulations/results/hsmm_sim4.rds")
+saveRDS(results, file = "./simulations/results/hsmm_sim.rds")
+results = readRDS("./simulations/results/hsmm_sim.rds")
 
 # simulate data to get empirical approximation of true state distribution
 set.seed(123)
