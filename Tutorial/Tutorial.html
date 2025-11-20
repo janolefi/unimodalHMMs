@@ -382,12 +382,12 @@ models</h1>
 <h2>1. Setup</h2>
 <p>In this <code>R</code> tutorial, we illustrate the implementation of
 the unimodal spline method described in the paper “Flexible unimodal
-density estimation in hidden Markov models” <span class="citation">(<a href="#ref-koslik2025unimodal">Koslik et al. 2025</a>)</span>. In that
-paper, we develop a method to fit hidden Markov models with flexible,
-P-spline-based emission densities that are constrained to be unimodal.
-We demonstrate how such constraints can make the model more robust
-against slight misspecification of the state process model which is
-often the case in practice.</p>
+density estimation in hidden Markov models”. In that paper, we develop a
+method to fit hidden Markov models with flexible, P-spline-based
+emission densities that are constrained to be unimodal. We demonstrate
+how such constraints can make the model more robust against slight
+misspecification of the state process model which is often the case in
+practice.</p>
 <p>The corresponding <code>.Rmd</code> file can be found <a href="https://github.com/janoleko/unimodalHMMs/blob/main/Tutorial/Tutorial.Rmd">here</a>.</p>
 <p>We begin by first loading relevant packages and sourcing custom
 helper functions.</p>
@@ -646,21 +646,20 @@ fixed to zero for identifiability which we do in the seventh line of
 <code>pnll</code> below using <code>cbind(beta, 0)</code>. Then, we
 transform the unconstrained parameter matrix to non-negative weights
 that sum to one – getting <span class="math inline">\(\alpha\)</span> as
-in <span class="citation">Koslik et al. (<a href="#ref-koslik2025unimodal">2025</a>)</span> – for each state using
-the inverse multinomial logistic link. The columns of the
-<code>allprobs</code> matrix are then computed as linear combinations of
-the columns of <span class="math inline">\(Z\)</span> and the weights
-<code>alpha</code>. We then penalise the unconstrained coefficients
-<code>beta</code> using the <code>penalty()</code> function. This helps
-prevent the estimated densities from overfitting by becoming too wiggly.
-Finally, we apply the unimodality constraint on the <code>beta</code>’s
-using the <code>penalty_uni()</code> function. Note that we place the
-unimodality penalty on the reweighted coefficients
-<code>beta + logweights</code>. This is because the penalty needs to be
-on the scale of the original B-spline basis, which was standardised to
-integrate to one by <code>smooth_dens_construct()</code>. The
-reweighting is done to ensure that the unimodality constraint is applied
-correctly, as described in the main manuscript (Equation (5)).</p>
+in the main manuscript – for each state using the inverse multinomial
+logistic link. The columns of the <code>allprobs</code> matrix are then
+computed as linear combinations of the columns of <span class="math inline">\(Z\)</span> and the weights <code>alpha</code>. We
+then penalise the unconstrained coefficients <code>beta</code> using the
+<code>penalty()</code> function. This helps prevent the estimated
+densities from overfitting by becoming too wiggly. Finally, we apply the
+unimodality constraint on the <code>beta</code>’s using the
+<code>penalty_uni()</code> function. Note that we place the unimodality
+penalty on the reweighted coefficients <code>beta + logweights</code>.
+This is because the penalty needs to be on the scale of the original
+B-spline basis, which was standardised to integrate to one by
+<code>smooth_dens_construct()</code>. The reweighting is done to ensure
+that the unimodality constraint is applied correctly, as described in
+the main manuscript (Equation (5)).</p>
 <pre class="r"><code>pnll &lt;- function(par){
   getAll(par, dat)
   ## state process model
@@ -867,11 +866,6 @@ Penalties.”</span> <em>Biometrics</em> 70 (4): 783–93.
 Koslik, Jan-Ole. 2024. <span>“Efficient Smoothness Selection for
 Nonparametric Markov-Switching Models via Quasi Restricted Maximum
 Likelihood.”</span> <em>arXiv Preprint arXiv:2411.11498</em>.
-</div>
-<div id="ref-koslik2025unimodal" class="csl-entry">
-Koslik, Jan-Ole, Fanny Dupont, Marie Auger-Méthé, and Nancy Heckman.
-2025. <span>“Flexible Unimodal Density Estimation in Hidden Markov
-Models.”</span> <em>arXiv Preprint ...</em>
 </div>
 </div>
 </div>

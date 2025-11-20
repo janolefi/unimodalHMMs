@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## 1. Setup
 
-In this ``R`` tutorial, we illustrate the implementation of the unimodal spline method described in the paper "Flexible unimodal density estimation in hidden Markov models" [@koslik2025unimodal]. In that paper, we develop a method to fit hidden Markov models with flexible, P-spline-based emission densities that are constrained to be unimodal. We demonstrate how such constraints can make the model more robust against slight misspecification of the state process model which is often the case in practice.
+In this ``R`` tutorial, we illustrate the implementation of the unimodal spline method described in the paper "Flexible unimodal density estimation in hidden Markov models". In that paper, we develop a method to fit hidden Markov models with flexible, P-spline-based emission densities that are constrained to be unimodal. We demonstrate how such constraints can make the model more robust against slight misspecification of the state process model which is often the case in practice.
 
 The corresponding `.Rmd` file can be found [here](https://github.com/janoleko/unimodalHMMs/blob/main/Tutorial/Tutorial.Rmd).
 
@@ -207,7 +207,7 @@ mydat <- list(N = N, # number of states
 
 ```
 
-Observe that `beta` has $24$ columns, instead of $25$. This is because the last column, which corresponds to the last coefficient for each state, needs to be fixed to zero for identifiability which we do in the seventh line of `pnll` below using `cbind(beta, 0)`. Then, we transform the unconstrained parameter matrix to non-negative weights that sum to one -- getting $\alpha$ as in @koslik2025unimodal -- for each state using the inverse multinomial logistic link. The columns of the `allprobs` matrix are then computed as linear combinations of the columns of $Z$ and the weights `alpha`. We then penalise the unconstrained coefficients `beta` using the ``penalty()`` function. This helps prevent the estimated densities from overfitting by becoming too wiggly. Finally, we apply the unimodality constraint on the `beta`'s using the `penalty_uni()` function.
+Observe that `beta` has $24$ columns, instead of $25$. This is because the last column, which corresponds to the last coefficient for each state, needs to be fixed to zero for identifiability which we do in the seventh line of `pnll` below using `cbind(beta, 0)`. Then, we transform the unconstrained parameter matrix to non-negative weights that sum to one -- getting $\alpha$ as in the main manuscript -- for each state using the inverse multinomial logistic link. The columns of the `allprobs` matrix are then computed as linear combinations of the columns of $Z$ and the weights `alpha`. We then penalise the unconstrained coefficients `beta` using the ``penalty()`` function. This helps prevent the estimated densities from overfitting by becoming too wiggly. Finally, we apply the unimodality constraint on the `beta`'s using the `penalty_uni()` function.
 Note that we place the unimodality penalty on the reweighted coefficients `beta + logweights`. This is because the penalty needs to be on the scale of the original B-spline basis, which was standardised to integrate to one by `smooth_dens_construct()`. The reweighting is done to ensure that the unimodality constraint is applied correctly, as described in the main manuscript (Equation (5)).
 
 ```{r pnll}

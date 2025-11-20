@@ -4,3 +4,4 @@
 .Ruserdata
 simulations/*.rds
 simulations/results
+narwal_case_study/analysis_old.R

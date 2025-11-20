@@ -35,7 +35,7 @@ B_norm <- t(t(B) / w)
 
 # plotting
 
-pdf("B-splines.pdf", width = 7, height = 3)
+# pdf("B-splines.pdf", width = 7, height = 3)
 
 par(mfrow = c(1,3),
     mar = c(5,4,4,0.5))
@@ -90,13 +90,14 @@ for (i in 2:ncol(B_norm)) {
 }
 lines(x, rowSums(dspline), lwd = 2.5)
 
-dev.off()
+# dev.off()
 
 
 
 
 # Initialisation strategy explained ---------------------------------------
 
+par(mfrow = c(1,1))
 # Below, we briefly explain how the spline coefficients are initialised using a 
 # parametric reference density. This happens automatically when calling
 # smooth_dens_construct()
@@ -129,3 +130,4 @@ plot(x, rowSums(dspline), type = "l", bty = "n",
      main = "(c) Sum of basis functions", ylab = "Density", lwd = 2, 
      ylim = c(0, dnorm(5, 5, sd)))
 curve(dnorm(x, 5, sd), add = TRUE, col = "blue", n = 500)
+
