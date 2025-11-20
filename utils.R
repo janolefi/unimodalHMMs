@@ -1,113 +1,6 @@
 ## defining color vector
 color = c("#E69F00", "#56B4E9", "#009E73")
 
-# ## function to construct unimodality constraint matrix
-# construct_C <- function(m, # beta mode index (vector of length N)
-#                         N, # number of states
-#                         k, # basis dimension
-#                         exclude_last = TRUE)
-# {
-#   # construct constraint matrices
-#   m <- as.numeric(m)
-#   D <- diff(diag(k)) # first-order difference matrix
-#   C <- list() # initialise list
-#   for(i in 1:N) {
-#     Ci <- D # initialise with first-order difference matrix
-#     if(m[i] < k){ # if there is a block that needs to be flipped, do that
-#       Ci[m[i]:(k-1), ] <- -Ci[m[i]:(k-1),]
-#     }
-#     if(exclude_last) Ci <- Ci[,-k] # maybe exclude last column because multiplied by zero
-#     C[[i]] <- Ci
-#   }
-#   return(C)
-# }
-
-
-# ## computes unimodality penalty for all states based on list of C-matrices
-# penalty_uni <- function(coef, m, kappa, rho = 20) {
-#   N <- length(m)
-#   k <- ncol(coef) + 1
-#   
-#   # set up constraint matrices
-#   C <- construct_C(m, N, k, exclude_last = TRUE)
-#   
-#   # compute penalty by summing over states
-#   pen <- 0
-#   for(i in 1:N) {
-#     pen <- pen - sum(min0_smooth(C[[i]] %*% coef[i,], rho = rho))
-#   }
-#   
-#   # return result scaled by kappa
-#   kappa * pen
-# }
-
-
-## function that takes a coefficient matrix and outputs a grid of index vectors m to search
-# set_m_grid <- function(beta) {
-#   N <- nrow(beta)
-#   k <- ncol(beta)
-#   
-#   m <- vector("list", N)  # Store mode indices for each row
-#   
-#   for (i in 1:N) {
-#     first_diff_sign <- sign(diff(beta[i, ]))
-#     rle_result <- rle(first_diff_sign)
-#     change_points <- cumsum(rle_result$lengths)
-#     mode_indices <- change_points[which(rle_result$values[-length(rle_result$values)] == 1)]
-#     
-#     # exclude stupidly small ones
-#     mode_indices <- mode_indices[-which(beta[i, mode_indices] < 0.01)]
-#     
-#     if (beta[i, 1] > beta[i, 2]) mode_indices <- c(1, mode_indices)
-#     if (beta[i, k] > beta[i, k - 1]) mode_indices <- c(mode_indices, k)
-#     
-#     if (length(mode_indices) == 1) {
-#       m[[i]] <- max(1, mode_indices - 1):min(k, mode_indices + 1)
-#     } else if (length(mode_indices) > 1) {
-#       m[[i]] <- seq(max(1, min(mode_indices) - 1), min(k, max(mode_indices) + 1))
-#     } else {
-#       m[[i]] <- integer(0)  # No modes found
-#     }
-#   }
-#   
-#   # Generate all possible combinations (Cartesian product)
-#   grid <- expand.grid(m, KEEP.OUT.ATTRS = FALSE)
-#   colnames(grid) <- paste0("Row", 1:N)  # Name columns dynamically
-#   
-#   return(grid)
-# }
-# 
-# set_m_grid <- function(beta) {
-#   N <- nrow(beta)
-#   k <- ncol(beta)
-#   
-#   m <- vector("list", N)  # Store mode indices for each row
-#   
-#   for (i in 1:N) {
-#     first_diff_sign <- sign(diff(beta[i, ]))
-#     rle_result <- rle(first_diff_sign)
-#     change_points <- cumsum(rle_result$lengths)
-#     mode_indices <- change_points[which(rle_result$values[-length(rle_result$values)] == 1)]
-#     
-#     if (beta[i, 1] > beta[i, 2]) mode_indices <- c(1, mode_indices)
-#     if (beta[i, k] > beta[i, k - 1]) mode_indices <- c(mode_indices, k)
-#     
-#     if (length(mode_indices) == 1) {
-#       m[[i]] <- max(1, mode_indices - 1):min(k, mode_indices + 1)
-#     } else if (length(mode_indices) > 1) {
-#       m[[i]] <- seq(max(1, min(mode_indices) - 1), min(k, max(mode_indices) + 1))
-#     } else {
-#       m[[i]] <- integer(0)  # No modes found
-#     }
-#   }
-#   
-#   # Generate all possible combinations (Cartesian product)
-#   grid <- expand.grid(m, KEEP.OUT.ATTRS = FALSE)
-#   colnames(grid) <- paste0("Row", 1:N)  # Name columns dynamically
-#   
-#   return(grid)
-# }
-
 set_m_grid <- function(beta) {
   N <- nrow(beta)
   k <- ncol(beta)
@@ -143,19 +36,6 @@ set_m_grid <- function(beta) {
 
   return(grid)
 }
-
-# mlogit <- function(coef, ref = ncol(coef) + 1){
-#   newcoef <- matrix(0, nrow = nrow(coef), ncol = ncol(coef) + 1)
-#   newcoef[, -ref] <- coef
-#   alpha <- exp(newcoef)
-#   alpha <- alpha / rowSums(alpha) # multinomial logit link
-#   REPORT(alpha)
-#   return(alpha)
-# }
-
-# min0_smooth <- function(x, rho = 20, eps = 0){
-#   (-1 / rho) * log(1 + exp(-rho * (x + eps)))
-# }
 
 mlogit <- function(x) {
   s <- 1 - rowSums(x)
