@@ -2,8 +2,16 @@
 .Rhistory
 .RData
 .Ruserdata
+.positai
+
 simulations/*.rds
 simulations/results
+simulations/sim_hsmm_old.R
+simulations/sim_simple_old.R
+
 narwal_case_study/analysis_old.R
+narwal_case_study/analysis_10m_old.R
 narwal_case_study/data/DiffDepth_TimeSeries.RData
-simulations/results/
+
+
+
