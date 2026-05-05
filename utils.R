@@ -1,5 +1,5 @@
 ## defining color vector
-color = c("#E69F00", "#56B4E9", "#009E73")
+color = c("#E69F00", "#56B4E9", "#009E73", "plum")
 
 set_m_grid <- function(beta) {
   N <- nrow(beta)
@@ -66,6 +66,25 @@ auc = function(states, stateprobs, npoints = 1000){
     fpr[i] = tpr_fpr(states, stateprobs, tau_grid[i])[2]
   }
   # AUC = area under the curve
-  sum(-diff(fpr) * (tpr[-1] + tpr[-npoints]) / 2)
+  val <- sum(-diff(fpr) * (tpr[-1] + tpr[-npoints]) / 2)
+  val[val < 0.5] <- 1 - val[val < 0.5] # label switch
+  return(val)
+}
+
+median_CI <- function(x, conf = 0.95) {
+  x <- sort(x)
+  n <- length(x)
+  
+  # Compute k1 and k2 from Binomial(n, 0.5)
+  alpha <- 1 - conf
+  k1 <- qbinom(alpha/2, n, 0.5)
+  k2 <- qbinom(1 - alpha/2, n, 0.5)
+  
+  # Adjust for R 1-indexing
+  k1 <- max(1, k1)        # can't be less than 1
+  k2 <- min(n, k2 + 1)    # upper bound inclusive
+  
+  # Return the order-statistic based CI
+  c(lower = x[k1], upper = x[k2])
 }
 
