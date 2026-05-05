@@ -7,9 +7,10 @@ TapeConfig(matmul = "plain")
 
 
 ## loading the narwhal data
-data = readRDS("./narwal_case_study/data/MaxDepth_TimeSeries.RData")
-data$maxdep = data$maxdep - 20 # subtracting the depth threshold to make it easier for gamma model
-nrow(data); range(data$maxdep)
+data = readRDS("~/Downloads/MaxDepth_10_TimeSeries.RData")
+data = subset(data, ID == "17001")
+data$maxdep = data$maxdep - 10 # subtracting the depth threshold to make it easier for gamma model
+nrow(data); range(data$maxdep, na.rm = TRUE)
 
 
 ## exploring potential initial values
@@ -71,38 +72,38 @@ init_values <- lapply(1:n_init, function(i) {
 dat = list(maxdep = data$maxdep, N = 3)
 
 # fitting models with different initial values
-# llks = rep(NA, n_init)
-# pb = txtProgressBar(min = 0, max = n_init, style = 3)
-# for(i in 1:n_init){
-#   setTxtProgressBar(pb, i)
-#   obj = MakeADFun(nll, init_values[[i]], silent = TRUE) # creating automatically diff'able objective
-#   opt = tryCatch(
-#     nlminb(obj$par, obj$fn, obj$gr), # optimising it
-#     error = function(e) NULL) # handle errors
-#   if(!is.null(opt$objective)) llks[i] = -opt$objective # saving log-likelihood
-#   gc() # cleaning up
-# }
-# close(pb)
+llks = rep(NA, n_init)
+pb = txtProgressBar(min = 0, max = n_init, style = 3)
+for(i in 1:n_init){
+  setTxtProgressBar(pb, i)
+  obj = MakeADFun(nll, init_values[[i]], silent = TRUE) # creating automatically diff'able objective
+  opt = tryCatch(
+    nlminb(obj$par, obj$fn, obj$gr), # optimising it
+    error = function(e) NULL) # handle errors
+  if(!is.null(opt$objective)) llks[i] = -opt$objective # saving log-likelihood
+  gc() # cleaning up
+}
+close(pb)
 
 # plotting log likelihoods
-# plot(llks)
+plot(llks)
 
 # refit best model
-# optpar = init_values[[which.max(llks)]]
-# saveRDS(optpar, "./narwal_case_study/objects/optpar_norm.rds") # saving best initial values
-# optpar = readRDS("./narwal_case_study/optpar_norm.rds") # reading best initial values
-# obj = MakeADFun(nll, optpar)
-# opt = nlminb(obj$par, obj$fn, obj$gr)
+optpar = init_values[[which.max(llks)]]
+saveRDS(optpar, "./narwal_case_study/objects/optpar_norm_10m.rds") # saving best initial values
+optpar = readRDS("./narwal_case_study/objects/optpar_norm_10m.rds") # reading best initial values
+obj = MakeADFun(nll, optpar)
+opt = nlminb(obj$par, obj$fn, obj$gr)
 
 # extract estimated parameters
-# mod_par = obj$report()
+mod_par = obj$report()
 
 # state decoding
-# mod_par$states = viterbi(mod = mod_par)
+mod_par$states = viterbi(mod = mod_par)
 
 # save estimated model
-# saveRDS(mod_par, "./narwal_case_study/mod_normal.rds")
-mod_par = readRDS("./narwal_case_study/objects/mod_normal.rds")
+saveRDS(mod_par, "./narwal_case_study/mod_normal_10m.rds")
+# mod_par = readRDS("./narwal_case_study/objects/mod_normal.rds")
 
 
 ###### Nonparametric fits -------------------------------------------------
@@ -124,13 +125,13 @@ pnll = function(par){
   allprobs = matrix(1, nrow(Z), N)
   ind = which(!is.na(Z[,1])) # NA handling
   allprobs[ind,] = Z[ind,] %*% t(alpha) # Z %*% alpha[i,] for all states at once
-
+  
   # forward algorithm + smoothness penalty + potential unimodality penalty (for kappa > 0)
   res = -forward(delta, Gamma, log(allprobs), logspace = TRUE) + # negative log likelihood
     penalty(beta, S, lambda) # P-spline smoothness penalty
   
   if(kappa > 0) res = res + penalty_uni(beta + logweights, m, kappa) # optional unimodality penalty
-
+  
   res
 }
 
@@ -212,14 +213,14 @@ plot(llks)
 
 
 ## refitting the best model
-# optpar = init_values[[which.max(llks)]]
-# optlambda = lambdas[[which.max(llks)]]
+optpar = init_values[[which.max(llks)]]
+optlambda = lambdas[[which.max(llks)]]
 
-# saveRDS(optpar, "./narwal_case_study/optpar_np.rds") # saving best initial values
-# saveRDS(optlambda, "./narwal_case_study/optlambda_np.rds") # saving best initial lambda
+saveRDS(optpar, "./narwal_case_study/objects/optpar_np_10m.rds") # saving best initial values
+saveRDS(optlambda, "./narwal_case_study/objects/optlambda_np_10m.rds") # saving best initial lambda
 
-optpar = readRDS("./narwal_case_study/objects/optpar_np.rds") # reading best initial values
-optlambda = readRDS("./narwal_case_study/objects/optlambda_np.rds") # reading best initial lambda
+optpar = readRDS("./narwal_case_study/objects/optpar_np_10m.rds") # reading best initial values
+optlambda = readRDS("./narwal_case_study/objects/optlambda_np_10m.rds") # reading best initial lambda
 
 # constructing the smooth density object
 sDens = smooth_dens_construct(data["maxdep"],
@@ -262,8 +263,8 @@ mod_np$dens = dens_np # saving the densities in the model object
 mod_np$xseq = xseq # saving the prediction grid
 delta_np = mod_np$delta # stationary distribution of the state process
 
-# saveRDS(mod_np, "./narwal_case_study/objects/mod_unconstrained_opt.rds") # saving the model")
-mod_np = readRDS("./narwal_case_study/objects/mod_unconstrained_opt.rds") # reading the model
+saveRDS(mod_np, "./narwal_case_study/objects/mod_unconstrained_opt_10m.rds") # saving the model")
+mod_np = readRDS("./narwal_case_study/objects/mod_unconstrained_opt_10m.rds") # reading the model
 
 
 hist(data$maxdep, breaks = 30, prob = TRUE, bor = "white", 
@@ -348,8 +349,8 @@ mod_uni$xseq = xseq
 delta_uni = mod_uni$delta
 
 # save the model
-# saveRDS(mod_uni, "./narwal_case_study/mod_constrained_opt.rds")
-mod_uni = readRDS("./narwal_case_study/objects/mod_constrained_opt.rds") # reading the model
+saveRDS(mod_uni, "./narwal_case_study/objects/mod_constrained_opt_10m.rds")
+mod_uni = readRDS("./narwal_case_study/objects/mod_constrained_opt_10m.rds") # reading the model
 
 hist(data$maxdep, breaks = 30, prob = TRUE, bor = "white", 
      xlim = c(0, 1000), ylim = c(0, 0.002),
@@ -365,7 +366,7 @@ for(i in 1:3) lines(mod_uni$xseq, mod_uni$delta[i] * mod_uni$dens[,i], lwd = 2, 
 
 # Plotting big state-dependent density figure -----------------------------
 
-# pdf("./narwal_case_study/figures/narwhal_statedep_new.pdf", width = 6, height = 5.5)
+# pdf("./narwal_case_study/figures/narwhal_statedep_10m.pdf", width = 6, height = 5.5)
 
 lwd = 1.5
 ltys <- c(1,2,4)
@@ -463,7 +464,7 @@ box()
 
 
 ## plotting the decoded time series
-pdf("narwal_case_study/figures/narwhal_states_new.pdf", width = 6, height = 4)
+# pdf("narwal_case_study/figures/narwhal_states_new_10m.pdf", width = 6, height = 4)
 
 # Define a 4-row layout: top row for legend, then the 3 plots
 layout(matrix(1:4, nrow = 4), heights = c(0.3, 1, 1, 1.3))  # top row is small
@@ -507,7 +508,7 @@ points(idx, data$maxdep[idx]+20, col = color[mod_uni$states[idx]],
        cex = 0.5, pch = pchs[mod_uni$states[idx]])
 mtext("(c) Unimodal", side = 3, adj = 0.02, line = -1, cex = 0.7)
 
-dev.off()
+# dev.off()
 
 
 ## persistence of the different models
