@@ -35,28 +35,31 @@ B_norm <- t(t(B) / w)
 
 # plotting
 
-# pdf("B-splines.pdf", width = 7, height = 3)
+pdf("B-splines_new.pdf", width = 7, height = 5)
 
-par(mfrow = c(1,3),
-    mar = c(5,4,4,0.5))
+par(mfrow = c(3,2),
+    mar = c(4.5,4,2.7,1) + 0.1)
 
 lwd = 1.5
 
 # original B-splines basis
-plot(x, B[,1], type = "l", bty = "n", ylab = "Basis function",
-     main = "(a) B-spline basis", ylim = c(0,2), col = cbPalette[1], lwd = lwd)
+plot(x, B[,1], type = "l", bty = "n", ylab = "Basis function", yaxt = "n",
+     main = "(a) B-spline basis", ylim = c(0,1), col = cbPalette[1], lwd = lwd)
 for (i in 2:ncol(B)) {
   # lines(x, B[,i], col = "lightgray", lwd = 2)
   lines(x, B[,i], col = cbPalette[i], lwd = lwd)
 }
+axis(2, at = seq(0,1,by=0.2), labels = seq(0,1,by=0.2),las = 1)
 
 # normalised B-splines basis
-plot(x, B_norm[,1], type = "l", bty = "n", ylim = c(0, 2), ylab = "Basis function",
+plot(x, B_norm[,1], type = "l", bty = "n", ylim = c(0, 1), ylab = "Basis function",
+     yaxt = "n",
      main = "(b) Normalised basis", lwd = lwd, col = cbPalette[1])
 # lines(x, B_norm[,1], col = cbPalette[1], lwd = 2)
 for (i in 2:ncol(B_norm)) {
   lines(x, B_norm[,i], col = cbPalette[i], lwd = lwd)
 }
+axis(2, at = seq(0,1,by=0.2), labels = seq(0,1,by=0.2),las = 1)
 
 
 # plot weighted B-splines basis -> density
@@ -82,15 +85,68 @@ a[10] <- 0
 a <- a / sum(a)
 
 dspline <- t(t(B_norm) * a)
-plot(x, dspline[,1] , type = "l", bty = "n", ylim = c(0, 0.35),
-     main = "(c) Sum of basis functions", ylab = "Density",
-     col = cbPalette[1], lwd = lwd)
+plot(x, dspline[,1] , type = "l", bty = "n", ylim = c(0, 0.3),
+     main = "(c) Unimodal Density", ylab = "Density",
+     col = cbPalette[1], lwd = lwd, las = 1)
 for (i in 2:ncol(B_norm)) {
   lines(x, dspline[,i], col = cbPalette[i], lwd = lwd)
 }
 lines(x, rowSums(dspline), lwd = 2.5)
 
-# dev.off()
+
+## bottom panel with alphas
+
+plot(basis_pos, a, type = "h", bty = "n", ylim = c(0,0.6), lwd = 2, 
+     col = cbPalette[4],
+     main = "(d) Coefficients", xlab = "x", ylab = expression(alpha), las = 1)
+points(basis_pos[4], a[4], type = "h", lwd = 2.5, col = cbPalette[7])
+lines(x, rowSums(dspline)*2, lty = 2)
+# axis(4, at = seq(0, 0.6, by = 0.1), labels = seq(0, 0.3, by = 0.05))
+# mtext("Density", side = 4, line = 2, cex = 0.7)
+
+
+
+# bimodal density
+# coefficients
+b1 <- dnorm(basis_pos, 2.5, 1, log = TRUE)
+b2 <- dnorm(basis_pos, 7.5, 1, log = TRUE)
+b1 <- b1 - min(c(b1,b2))
+b2 <- b2 - min(c(b1,b2))
+a1 <- exp(b1)
+a2 <- exp(b2)
+a_bm <- a1 + a2
+a_bm <- a_bm / sum(a_bm)
+a_bm[8] <- 0.1
+a_bm[2] <- 0.01
+a_bm[9] <- 0.01
+a_bm[10] <- 0
+a_bm[1] <- 0
+a_bm <- a_bm / sum(a_bm)
+
+dspline_bm <- t(t(B_norm) * a_bm)
+plot(x, dspline_bm[,1] , type = "l", bty = "n", ylim = c(0, 0.2),
+     main = "(e) Bimodal density", ylab = "Density", las = 1,
+     col = cbPalette[1], lwd = lwd)
+for (i in 2:ncol(B_norm)) {
+  lines(x, dspline_bm[,i], col = cbPalette[i], lwd = lwd)
+}
+lines(x, rowSums(dspline_bm), lwd = 2.5)
+
+
+## bottom panel with alphas
+plot(basis_pos, a_bm, type = "h", bty = "n", ylim = c(0, 0.4), lwd = 2, 
+     col = cbPalette[4], las = 1,
+     main = "(f) Bimodal coefficients", xlab = "x", ylab = expression(alpha))
+# for (i in 2:ncol(B_norm)) {
+#   lines(x, dspline_bm[,i], col = cbPalette[i], lwd = lwd)
+# }
+points(basis_pos[c(4,7)], a_bm[c(4,7)], type = "h", lwd = 2.5, col = cbPalette[7])
+
+lines(x, rowSums(dspline_bm)*2, lty = 2)
+# axis(4, at = seq(0, 0.6, by = 0.1), labels = seq(0, 0.3, by = 0.05))
+# mtext("Density", side = 4, line = 2, cex = 0.7)
+
+dev.off()
 
 
 
