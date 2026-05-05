@@ -4,6 +4,8 @@ library(LaMa)
 library(parallel)
 library(scales)
 
+TapeConfig(matmul = "plain")
+
 source("./utils.R")
 
 # first state: mixture of two Poisson distributions
@@ -49,25 +51,30 @@ nll_st <- function(par){
   -forward(delta, Gamma, allprobs)
 }
 
-# parametric likelihood normal
-nll_norm <- function(par){
-  getAll(par, dat)
-  Gamma = tpm(beta0)
-  delta = stationary(Gamma)
-  sigma = exp(logsigma)
-  REPORT(mu); REPORT(sigma)
-  allprobs = matrix(1, length(x), 2)
-  ind = which(!is.na(x))
-  allprobs[ind,] = cbind(dnorm(x[ind], mu[1], sigma[1]),
-                         dnorm(x[ind], mu[2], sigma[2]))
-  -forward(delta, Gamma, allprobs)
-}
+
 
 
 # fit both models for one random initial parameter set
 one_fit = function(dummy, data, truepar){
   
+  library(LaMa)
+  
   ## likelihood functions
+  # parametric likelihood normal
+  nll_norm <- function(par){
+    getAll(par, dat)
+    Gamma = tpm(beta0)
+    delta = stationary(Gamma)
+    sigma = exp(logsigma)
+    REPORT(mu); REPORT(sigma)
+    allprobs = matrix(1, length(x), 2)
+    ind = which(!is.na(x))
+    allprobs[ind,] = cbind(dnorm(x[ind], mu[1], sigma[1]),
+                           dnorm(x[ind], mu[2], sigma[2]))
+    -forward(delta, Gamma, allprobs)
+  }
+  environment(nll_norm) <- environment()
+  
   # nonparametric likelihood function
   pnll = function(par){
     getAll(par, dat)
@@ -81,18 +88,31 @@ one_fit = function(dummy, data, truepar){
     allprobs = matrix(1, nrow(Z), N)
     ind = which(!is.na(Z[,1])) # only for non-NA obs.
     allprobs[ind,] = Z[ind,] %*% t(alpha)
-    # forward algorithm + penalty
-    res = -forward(delta, Gamma, allprobs) +
-      penalty(beta, S, lambda)
-    # constraints formulated as penalty
-    # cpen = 0 # initialise with zero
-    # for(i in 1:N) {
-    #   cpen = cpen - sum(min0_smooth(C[[i]] %*% (beta[i,] + logw), alpha = 20))
-    # }
+    # forward algorithm + P-spline penalty
+    res = -forward(delta, Gamma, allprobs) + penalty(beta, S, lambda)
+    # unimodality constraints formulated as penalty
     if(kappa > 0) res = res + penalty_uni(beta + logweights, m, kappa)
-    # p + kappa * cpen
     res
   }
+  
+  ## Fit wrong parametric model
+  # random initial values
+  par = list(
+    beta0 = runif(2, -4, -1),
+    mu = truepar$mean + rnorm(2, 0, 0.5),
+    logsigma = log(truepar$sd) + rnorm(2, 0, 0.5)
+  )
+  # observations
+  dat = list(x = data$x)
+  
+  # model fitting and reporting
+  obj_par_norm = MakeADFun(nll_norm, par)
+  opt_par_norm = tryCatch(
+    optim(obj_par_norm$par, obj_par_norm$fn, obj_par_norm$gr, method = "BFGS"),
+    error = function(e) NULL)
+  mod_par_norm = obj_par_norm$report()
+  mod_par_norm$llk = -opt_par_norm$value
+  
   
   # exlude this from saved models
   # excl = c("allprobs", "Hessian_conditional", "obj_joint", "outer_gr", "relist_par")
@@ -111,7 +131,7 @@ one_fit = function(dummy, data, truepar){
     mean = par$mu,
     sd = exp(par$logsigma)
   )
-
+  
   sDens = smooth_dens_construct(data["x"], k = k,
                                 par = list(x = par0_smooth))
   Z = sDens$Z$x
@@ -135,11 +155,11 @@ one_fit = function(dummy, data, truepar){
   mod_np$dens = t(mod_np$delta * t(Z_p %*% t(mod_np$alpha)))
   mod_np$xseq = xseq
   mod_np = mod_np[!names(mod_np) %in% excl] # excluding big objects
-
+  
   
   ## constrained fit
   # use the same initial parameter values as for the unconstrained fit
-
+  
   ms = set_m_grid(mod_np$par$beta) # m_grid based on previous optimum
   # add indices I want to check for sure
   m1 = 12:13
@@ -147,7 +167,7 @@ one_fit = function(dummy, data, truepar){
   ms = rbind(ms, expand.grid(m1 = m1, m2 = m2))
   # drop duplicates
   ms = unique(ms)
-    
+  
   dat$lambda = rep(50, 2)
   dat$kappa = 1e3 * 5
   llks = rep(NA, nrow(ms))
@@ -167,15 +187,16 @@ one_fit = function(dummy, data, truepar){
   mod_c$dens = dens_c
   mod_c$xseq = xseq
   mod_c = mod_c[!names(mod_c) %in% excl]
-
+  
   ## returning
   out = list(
+    mod_par_norm = mod_par_norm,
     mod_np = mod_np,
     mod_c = mod_c
   )
   
   ## cleanup for memory
-  rm(mod_np); rm(mod_c)
+  rm(mod_np); rm(mod_c); rm(mod_par_norm); rm(obj_par_norm)
   rm(data)
   rm(sDens)
   rm(dat)
@@ -227,7 +248,7 @@ results = list()
 t1 = Sys.time()
 i = 1
 while(i <= n_sim){
-  cat("Simulation run", i, "of", n_sim, "\n")
+  message(paste("Simulation run", i, "of", n_sim))
   
   data = sim_data(nObs, truepar, Gamma)
   
@@ -257,25 +278,6 @@ while(i <= n_sim){
   mod_par = obj_par$report()
   mod_par$llk = -opt_par$value
   
-  ## Fit wrong parametric model
-  # random initial values
-  par = list(
-    beta0 = qlogis(rep(0.1, 2)),
-    mu = truepar$mean,
-    logsigma = log(truepar$sd) * 1.5
-  )
-  
-  # model fitting and reporting
-  obj_par_norm = MakeADFun(nll_norm, par, silent = TRUE)
-  opt_par_norm = tryCatch(
-    optim(obj_par_norm$par, obj_par_norm$fn, obj_par_norm$gr, method = "BFGS"),
-    error = function(e) NULL)
-  if(!is.list(opt_par_norm)){
-    next
-  }
-  mod_par_norm = obj_par_norm$report()
-  mod_par_norm$llk = -opt_par_norm$value
-  
   
   ## fit nonparametric models
   # parallelise over initial values
@@ -285,6 +287,10 @@ while(i <= n_sim){
                      mc.cores = 4)
   
   # extract likelihoods to find best model
+  llk_norm = lapply(thisres, function(x) x$mod_par_norm$llk)
+  llk_norm = lapply(llk_norm, function(x) if(is.null(x)) NA else x)
+  llk_norm = unlist(llk_norm)
+  
   llk_np = lapply(thisres, function(x) x$mod_np$llk)
   llk_np = lapply(llk_np, function(x) if(is.null(x)) NA else x)
   llk_np = unlist(llk_np)
@@ -293,12 +299,18 @@ while(i <= n_sim){
   llk_c = lapply(llk_c, function(x) if(is.null(x)) NA else x)
   llk_c = unlist(llk_c)
   
+  if(all(is.na(llk_norm))){
+    mod_par_norm = NULL
+  } else{
+    mod_par_norm = thisres[[which.max(llk_norm)]]$mod_par_norm
+  }
+  
   if(all(is.na(llk_np))){
     mod_np = NULL
   } else{
     mod_np = thisres[[which.max(llk_np)]]$mod_np
   }
-
+  
   if(all(is.na(llk_c))){
     mod_c = NULL
   } else{
@@ -347,11 +359,12 @@ while(i <= n_sim){
   i = i + 1
 }
 Sys.time() - t1
+gc()
 
 
 ## Save results
-saveRDS(results, file = "./simulations/results/simple_sim100.rds")
-results = readRDS("./simulations/results/simple_sim100.rds")
+# saveRDS(results, file = "./simulations/results/simple_sim100_new.rds")
+# results = readRDS("./simulations/results/simple_sim100_new.rds")
 
 
 ## Filter results
@@ -361,7 +374,7 @@ nresults = length(results)
 
 ## plotting results
 
-# pdf("./simulations/figures/simple_sim.pdf", width = 8, height = 5)
+# pdf("./simulations/figures/simple_sim_new.pdf", width = 8, height = 5)
 
 # plotting the results
 par(mfrow = c(2,2), mar = c(5,4,2,1) + 0.1)
@@ -375,7 +388,7 @@ for(i in 1:nresults){
   delta = thismod$alpha / sqrt(1 + thismod$alpha^2)
   thism = thismod$xi + thismod$omega * delta * sqrt(2 / pi)
   thiscol = color[order(c(thism, thismod$mu))]
-
+  
   curve(thismod$delta[1] * dskewnorm(x, thismod$xi, thismod$omega, thismod$alpha),
         lwd = 0.5, col = alpha(thiscol[1], 0.2), add = TRUE, n = 500)
   curve(thismod$delta[2] * dt((x-thismod$mu)/thismod$sd, thismod$df) / thismod$sd,
@@ -394,10 +407,10 @@ mtext("(b) Normal", side = 3, adj = 0.5, line = 0.2, cex = 0.9)
 for(i in 1:nresults){
   thismod = results[[i]]$mod_par_norm
   thiscol = color[order(thismod$mu)]
-
+  
   for(j in 1:2){
     curve(thismod$delta[j] * dnorm(x, thismod$mu[j], thismod$sigma[j]),
-          lwd = 0.5, col = alpha(color[j], 0.2), add = TRUE, n = 500)
+          lwd = 0.5, col = alpha(thiscol[j], 0.2), add = TRUE, n = 500)
   }
 }
 curve(0.5 * dskewnorm(x, truepar$xi, truepar$omega, truepar$alpha),
@@ -459,10 +472,12 @@ curve(0.5 * dt((x-truepar$mu) / truepar$sigma, truepar$df) / truepar$sigma,
 
 auc_par = sapply(results, function(x) x$mod_par$auc)
 auc_par_norm = sapply(results, function(x) x$mod_par_norm$auc)
+auc_par_norm[auc_par_norm < 0.5] <- 1-auc_par_norm[auc_par_norm < 0.5]
 auc_np = sapply(results, function(x) x$mod_np$auc)
 auc_c = sapply(results, function(x) x$mod_c$auc)
 # correct for label switching
 auc_c[label_switch_c] = 1 - auc_c[label_switch_c]
+auc_c[auc_c < 0.5] = 1 - auc_c[auc_c < 0.5]
 
 names = c("Skew normal - t", "Normal", "Nonparametric", "Unimodal")
 AUC = data.frame(
@@ -471,9 +486,14 @@ AUC = data.frame(
 )
 AUC$model = factor(AUC$mod, levels = names)
 
+# compute CIs for median
+ci_snt <- median_CI(AUC$auc[AUC$model == "Skew normal - t"])
+ci_no <- median_CI(AUC$auc[AUC$model == "Normal"])
+ci_np <- median_CI(AUC$auc[AUC$model == "Nonparametric"])
+ci_uni <- median_CI(AUC$auc[AUC$model == "Unimodal"])
 
 
-# pdf("./simulations/figures/simple_sim_boxplot.pdf", width = 5, height = 3.5)
+# pdf("./simulations/figures/simple_sim_boxplot_CI.pdf", width = 5, height = 3.5)
 
 # par(mfrow = c(1,2))
 par(mfrow = c(1,1), mar = c(5,7,3,2)+0.1)
@@ -484,6 +504,16 @@ boxplot(auc ~ model, data = AUC, ylim = c(0.97, 1), ylab = "", xlab = "AUC", mai
         pch = 20, col = "gray95", lwd = 0.5, outcol = "#00000030", frame = FALSE, las = 1)
 abline(v = median(AUC$auc[which(AUC$model == "Skew normal - t")]), col = color[2], lty = 2)
 # mtext("AUC", side = 2, line = 4, cex = 1)  # move y-axis label further from axis
+
+# add semi-transparent light gray rectangles for the median CIs
+rect(xleft = ci_snt[1], xright = ci_snt[2], ybottom = 0.6, ytop = 1.4,
+     col = adjustcolor("black", alpha.f = 0.2), border = NA)
+rect(xleft = ci_no[1], xright = ci_no[2], ybottom = 1.6, ytop = 2.4,
+     col = adjustcolor("black", alpha.f = 0.2), border = NA)
+rect(xleft = ci_np[1], xright = ci_np[2], ybottom = 2.6, ytop = 3.4,
+     col = adjustcolor("black", alpha.f = 0.2), border = NA)
+rect(xleft = ci_uni[1], xright = ci_uni[2], ybottom = 3.6, ytop = 4.4,
+     col = adjustcolor("black", alpha.f = 0.2), border = NA)
 
 # dev.off()
 
