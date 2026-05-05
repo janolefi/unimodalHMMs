@@ -1,5 +1,5 @@
 ---
-title: "R Tutorial to fit  unimodal spline method from the paper \"Flexible unimodal density estimation in hidden Markov models"
+title: "S7 R Tutorial to fit  unimodal spline method from the paper \"Flexible unimodal density estimation in hidden Markov models"
 output: 
   pdf_document:
     latex_engine: pdflatex
@@ -35,23 +35,24 @@ RTMB::TapeConfig(matmul = "plain")
 
 We place unimodality restrictions on a vector of coefficients in order to restrict a density function to be unimodal. This section explains the connection between these two restrictions, and how the location of the mode of the function is not easily relatable to the restrictions on the coefficients. This section, which contains some technical details, can be skipped at first reading.
 
-We start by defining a function $f$ in terms of a B-spline expansion, that is
+We start by defining a function $f$ in terms of a cubic B-spline expansion, that is
 $$
 f(x) = \sum_{k = 1}^K \alpha_k B_k(x),
 $$
-where $B_1, \dots, B_K$ are B-spline basis functions and $\alpha_1, \dots, \alpha_K$ are the spline coefficients, controlling the shape of $f$.
-Let us take a moment to think through how the mode location of $f$ interacts with a mode in the coefficient sequence $\alpha_1, \dots, \alpha_K$ of the expansion. We start with a basic example. Suppose we have $5$ B-spline basis functions defined on [0,1], which means we also have $5$ corresponding spline coefficients, denoted as $\alpha_1,\alpha_2, \alpha_3, \alpha_4,\alpha_5$. These basis functions are typically defined by a set of knots, and for simplicity, let’s assume just one interior knot at $x = 0.5$. This knot splits the domain [0,1] into two intervals:
+where $B_1, \dots, B_K$ are cubic B-spline basis functions and $\alpha_1, \dots, \alpha_K$ are the spline coefficients, controlling the shape of $f$.
+Let us take a moment to think through how the mode location of $f$ interacts with a mode in the coefficient sequence $\alpha_1, \dots, \alpha_K$ of the expansion. We start with a basic example. Suppose we have $5$ B-spline basis functions defined on [0,1], which means we also have $5$ corresponding spline coefficients, denoted as $\alpha_1,\alpha_2, \alpha_3, \alpha_4,\alpha_5$. These basis functions are typically defined by a set of knots.
+When there are five basis functions, there is just one interior knot. Let's assume the knot is at $x = 0.5$. This knot splits the domain [0,1] into two intervals:
 
 * [0,0.5)
 * [0.5,1]
 
 ```{r define knots and spline coefficients,message=FALSE}
 knots <- seq(0, 1, by = 0.5) 
-knots <- knots[2:(length(knots)-1)] # interior knot sequence
+int_knots <- knots[2:(length(knots)-1)] # interior knot sequence
 # Note: bSpline sets default boundary knots as max, min of x - but user can specify
 degree <- 3 # degree of the B-spline basis - here cubic
 x <- seq(0, 1, by = 0.01) # evaluation points
-bsMat <- bSpline(x, knots = knots, Boundary.knots = c(0,1), degree = degree, intercept = TRUE)
+bsMat <- bSpline(x, knots = int_knots, Boundary.knots = c(0,1), degree = degree, intercept = TRUE)
 # bsMat = design matrix:  bsMat[i,j] = phi_j(x_i)
 # dimension of bsMat = length(x) by degree + 1 + length(knots)
 ```
@@ -63,10 +64,10 @@ plot(bsMat, mark_knots = "all")
 title("B-spline basis functions")
 ```
 
-As we described in the main manuscript, to enforce unimodality (i.e., the fact that the spline should have a single peak/ mode), we need to apply some restrictions on the spline coefficients $\alpha_1, \alpha_2, \alpha_3, \alpha_4$ and $\alpha_5$. We fix the general shape by requiring the coefficients to be non-decreasing up to the mode and then non-increasing [@kollmann2014unimodal]. In practice, the $\alpha$ parameters are constrained to sum to one and we apply the constraint to the unconstrained coefficients $\beta$. For simplicity, we will focus on the $\alpha$ values here, just keep in mind that later the constraint will be applied to the unconstrained coefficients.
+As we described in the main manuscript, to enforce unimodality (i.e., the fact that the spline should have a single peak/ mode), we need to apply some restrictions on the spline coefficients $\alpha_1, \alpha_2, \alpha_3, \alpha_4$ and $\alpha_5$. We fix the general shape by requiring the coefficients to be non-decreasing up to the mode and then non-increasing [@kollmann2014unimodal]. In practice, the $\alpha$ parameters are constrained to sum to one and we apply the additional unimodality constraint to their unconstrained version $\beta$. For simplicity, we will focus on the $\alpha$ values here, just keep in mind that later the constraint will be applied to the $\beta$'s.
 
-Because unimodality is enforced via constraints on the spline coefficients, and not directly on the function values or the location of the mode, we cannot predict in advance exactly where the mode of the spline function will be on the x-axis because the basis functions overlap. Thus a single coefficient doesn't control the function height at a single point on the x-axis, but rather influences the entire region where the associated basis function is non-zero. So even if we have an increasing then decreasing sequence of spline coefficients, the actual mode of the function might fall in the following locations:
-(1) In the first interval $[0.0, 0.5)$, (2) at the knot ($x = 0.5$), or (3) in the second interval $(0.5, 1.0)$, depending on the interaction of the coefficients. 
+Unimodality is enforced via constraints on the spline coefficients, and not directly on the function values or the location of the mode. We cannot predict exactly where the mode of the spline function will be on the x-axis from the mode location of the coefficient sequence. The mode location for the spline function depends on the specific values of the coefficients because a single coefficient doesn't control the function height at a single point on the x-axis, but rather influences the entire region where the associated basis function is non-zero. So even if we have an increasing then decreasing sequence of spline coefficients, the actual mode of the function might fall in the following locations:
+(1) In the first interval $[0.0, 0.5)$, (2) at the knot ($x = 0.5$), or (3) in the second interval $(0.5, 1.0)$, depending on the exact values of the coefficients. 
 
 Let us consider three sequences of spline coefficients, each with a mode at $\alpha_3$, but producing a mode in the function at different locations, with the function's mode location seen in the plot of the function, below.
 
@@ -95,7 +96,7 @@ legend("topright", inset = c(-0.33, 0),  # negative x inset pushes legend outsid
        cex = 0.8)
 ```
 
-Observe that in all three cases, the peak value of the sequence $\alpha_1, \ldots, \alpha_5$ occurs at the third coefficient. However, the mode of the function $f$ (i.e., the location in the x-axis where the function reaches its maximum) differs across the three examples. This illustrates an important point: the location of the peak in $f$ is influenced not only by where the $\alpha'$s peak is in the sequence, but also by the shape and placement of the B-spline basis functions and the specific values of all coefficients. In other words, even with the same unimodality constraint on the coefficients, the interaction between the $\alpha'$s and the basis functions can shift the location of the mode in the function output. This is something to keep in mind when interpreting or designing unimodal spline models.
+Observe that in all three cases, the peak value of the sequence $\alpha_1, \ldots, \alpha_5$ occurs at the third coefficient. However, the mode of the function $f$ (i.e., the location in the x-axis where the function reaches its maximum) differs across the three examples. This illustrates an important point: the location of the peak in $f$ is influenced not only by where the $\alpha$'s peak is in the sequence, but also by the shape and placement of the B-spline basis functions and the specific values of all coefficients. In other words, even with the same unimodality constraint on the coefficients, the interaction between the $\alpha$'s and the basis functions can shift the location of the mode in the function output. This is something to keep in mind when interpreting or designing unimodal spline models.
 
 
 ## 3. Unimodal splines for HMMs
@@ -107,9 +108,7 @@ data <- nessi[1:1000, 1:2] # only using the first 1000 observations for this exa
 head(data)
 ```
 The first column of the dataset contains said overall dynamic body acceleration (`ODBA`) of the monster as a measure of its activity level.
-<!-- The dataset contains three columns: the overall dynamic body acceleration (`ODBA`) of the monster, `logODBA`, which represents the logarithm of `ODBA` and is our variable of interest, and the `state` column, which indicates the behavioural state of the monster. The `state` ranges from 1 to 3, as `nessi` was simulated with a three-state hidden Markov model (HMM).  -->
-<!-- However, for the subsequent analyis, we will pretend that we do not know the true states. -->
-Since `ODBA` is strictly positive with some extreme values, direct analysis can be difficult. Therefore, for our analysis, we consider the logarithm of `ODBA` as our observed process, which is precomputed in the second column of the dataset (`logODBA`). 
+`ODBA` is strictly positive but has some extreme values which makes direct analysis difficult. Therefore, for our analysis, we consider the logarithm of `ODBA` as our observed process, which is precomputed in the second column of the dataset (`logODBA`). 
 We will fit a three-state HMM with unimodal nonparametric state-dependent distributions.
 
 First, let us specify the model we will fit to our data. To do so, we use the `smooth_dens_construct()` function, available in `LaMa`.
@@ -180,7 +179,7 @@ mydat <- list(N = N, # number of states
 
 ```
 
-Observe that `beta` has $24$ columns, instead of $25$. This is because the last column, which corresponds to the last coefficient for each state, needs to be fixed to zero for identifiability which we do in the seventh line of `pnll` below using `cbind(beta, 0)`. Then, we transform the unconstrained parameter matrix to non-negative weights that sum to one -- getting $\alpha$ as in the main manuscript -- for each state using the inverse multinomial logistic link. The columns of the `allprobs` matrix are then computed as linear combinations of the columns of $Z$ and the weights `alpha`. We then penalise the unconstrained coefficients `beta` using the ``penalty()`` function. This helps prevent the estimated densities from overfitting by becoming too wiggly. Finally, we apply the unimodality constraint on the `beta`'s using the `penalty_uni()` function.
+Observe that `beta` has $24$ columns, instead of $25$. This is because the last column, which corresponds to the last coefficient for each state, needs to be fixed to zero for identifiability, which we do in the seventh line of `pnll` below using `cbind(beta, 0)`. Then, we transform the unconstrained parameter matrix to non-negative weights that sum to one -- getting $\alpha$ as in the main manuscript -- for each state using the inverse multinomial logistic link. The columns of the `allprobs` matrix are then computed as linear combinations of the columns of `Z` and the weights `alpha`. We then penalise the unconstrained coefficients `beta` using the ``penalty()`` function. This helps prevent the estimated densities from overfitting by becoming too wiggly. Finally, we apply the unimodality constraint on `beta` using the `penalty_uni()` function.
 Note that we place the unimodality penalty on the reweighted coefficients `beta + logweights`. This is because the penalty needs to be on the scale of the original B-spline basis, which was standardised to integrate to one by `smooth_dens_construct()`. The reweighting is done to ensure that the unimodality constraint is applied correctly, as described in the main manuscript (Equation (5)).
 
 ```{r pnll}
@@ -238,16 +237,16 @@ lines(xseq, marDens, lty = 2, lwd = 2)
 
 The unimodality constraint is implemented in the last line of `pnll` by calling the function `penalty_uni()`. Internally, this function applies the following strategy, described in the manuscript. The linear positivity constraint is written as 
 $$
-C'\beta \geq 0.
+\boldsymbol{C}^\top \boldsymbol{\beta} \geq \boldsymbol{0}.
 $$
-
+With $\boldsymbol{C}$ as defined in the main manuscript in Section 2.3.
 Instead of enforcing this as a hard constraint, we incorporate it as a penalty in the objective function by adding 
 
 $$
-\min(C'\beta, 0),
+\min(\boldsymbol{C}^\top \boldsymbol{\beta} , \boldsymbol{0}),
 $$ 
 
-scaled by a large penalty parameter (called `kappa` in `penalty_uni()`) to strongly discourage violations. Since the standard minimum function is not differentiable at $0$, we use a smooth approximation, specifically 
+scaled by a large penalty parameter (called `kappa` in `penalty_uni()`) to strongly discourage violations. Since the standard minimum function is not differentiable at $0$, we use a smooth approximation as discussed in Supplementary Material (S.1). Specifically,
 $$
 \text{min}(x, 0) \approx \; -\frac{1}{\rho} \log\bigl[1 + \exp(- \rho x)\bigr], % \equiv M_{\rho}(x),
 $$
